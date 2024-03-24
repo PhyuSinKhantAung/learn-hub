@@ -4,9 +4,17 @@ import { AuthModule } from './auth/auth.module';
 import { TeacherModule } from './teacher/teacher.module';
 import { AdminModule } from './admin/admin.module';
 import { StudentModule } from './student/student.module';
+import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
-  imports: [UserModule, AuthModule, TeacherModule, AdminModule, StudentModule],
+  imports: [
+    UserModule,
+    AuthModule,
+    TeacherModule,
+    AdminModule,
+    StudentModule,
+    PrismaModule,
+  ],
   controllers: [],
   providers: [],
 })
