@@ -1,0 +1,14 @@
+version: '4.2'
+services:
+  dev-db:
+    image: postgres:13
+    ports:
+      - 5434:5432
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: 1234@dmin!!!
+      POSTGRES_DB: learnhubDB
+    networks:
+      - learnhub
+networks:
+  learnhub:
