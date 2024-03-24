@@ -27,6 +27,9 @@ model User {
   StudentProfile StudentProfile?
   TeacherProfile TeacherProfile?
   AdminProfile   AdminProfile?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model StudentProfile {
