@@ -19,17 +19,19 @@ export class GoogleOAuthStrategy extends PassportStrategy(Strategy, 'google') {
   }
 
   async validate(accessToken: string, refreshToken: string, profile: any) {
-    // console.log({ accessToken, refreshToken });
-    // console.log({ profileJSON: profile._json });
-
     const { name, email } = profile._json;
     const filter = { email };
-    const payload = { name, email, password: '' };
+    const payload = { name, email, password: '', googleId: profile.id };
 
     const user = await this.prisma.user.upsert({
       create: payload,
       update: { email: email.value },
       where: filter,
+      select: {
+        name: true,
+        email: true,
+        isActive: true,
+      },
     });
 
     if (!user) return null;
