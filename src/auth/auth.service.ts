@@ -42,14 +42,18 @@ export class AuthService {
       },
     });
 
+    console.log({ user });
+
     if (!user) throw new NotFoundException('User not found');
 
     const isValidPassword = await argon.verify(user.password, dto.password);
+    console.log({ isValidPassword });
 
     if (!isValidPassword) throw new ForbiddenException('Credentials incorrect');
 
     const payload = { sub: user.id, email: user.email, role: user.role };
 
+    console.log({ payload });
     return this.generateToken(payload);
   }
 
@@ -63,5 +67,9 @@ export class AuthService {
       secret: this.config.get('JWT_SECRET'),
     });
     return { accessToken };
+  }
+
+  async hashedUserPassword(password: string) {
+    return await argon.hash(password);
   }
 }
