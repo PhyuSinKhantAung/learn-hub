@@ -1,7 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateCourseDto } from './dto';
-import { EditCourseDto } from './dto/editCourse.dto';
+import { CreateCourseDto, EnrollCourseDto, EditCourseDto } from './dto';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 @Injectable()
 export class CourseService {
@@ -18,15 +22,23 @@ export class CourseService {
   }
 
   async editCourse(dto: EditCourseDto, courseId: number) {
-    const course = await this.prisma.course.update({
-      where: {
-        id: +courseId,
-      },
-      data: {
-        ...dto,
-      },
-    });
-    return course;
+    try {
+      const course = await this.prisma.course.update({
+        where: {
+          id: +courseId,
+        },
+        data: {
+          ...dto,
+        },
+      });
+
+      return course;
+    } catch (error) {
+      if (error instanceof PrismaClientKnownRequestError) {
+        if (error.code === 'P2025')
+          throw new NotFoundException('Course not found to update');
+      }
+    }
   }
 
   async getCourseById(courseId: number) {
@@ -40,10 +52,33 @@ export class CourseService {
   }
 
   async deleteCourse(courseId: number) {
-    await this.prisma.course.delete({
-      where: {
-        id: +courseId,
-      },
-    });
+    try {
+      await this.prisma.course.delete({
+        where: {
+          id: +courseId,
+        },
+      });
+    } catch (error) {
+      if (error instanceof PrismaClientKnownRequestError) {
+        if (error.code === 'P2025')
+          throw new NotFoundException('Course not found to delete');
+      }
+    }
+  }
+  async enrollCourse(dto: EnrollCourseDto) {
+    try {
+      const enrolledCourse = await this.prisma.courseEnrollMent.create({
+        data: {
+          ...dto,
+        },
+      });
+
+      return enrolledCourse;
+    } catch (error) {
+      if (error instanceof PrismaClientKnownRequestError) {
+        if (error.code === 'P2002')
+          throw new ConflictException('Duplicated course enrollments');
+      }
+    }
   }
 }

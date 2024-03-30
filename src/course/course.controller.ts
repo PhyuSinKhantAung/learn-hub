@@ -12,6 +12,8 @@ import { CreateCourseDto } from './dto';
 import { CourseService } from './course.service';
 import { EditCourseDto } from './dto/editCourse.dto';
 import { JwtGuard } from 'src/auth/guard/jwt.guard';
+import { GetUser } from 'src/auth/decorator';
+import { CourseUserRole } from '@prisma/client';
 
 @UseGuards(JwtGuard)
 @Controller('courses')
@@ -35,5 +37,17 @@ export class CourseController {
   @Delete('/:id')
   async deleteCourse(@Param('id') id: number) {
     return await this.courseService.deleteCourse(id);
+  }
+  @Post('/:id/courseEnrollments')
+  async enrollCourse(
+    @Param('id') id: number,
+    @GetUser('role') role: CourseUserRole,
+    @GetUser('id') userId: number,
+  ) {
+    return await this.courseService.enrollCourse({
+      courseId: +id,
+      userId,
+      role,
+    });
   }
 }
