@@ -6,6 +6,7 @@ import { AdminModule } from './admin/admin.module';
 import { StudentModule } from './student/student.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ConfigModule } from '@nestjs/config';
+import { CourseModule } from './course/course.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { ConfigModule } from '@nestjs/config';
     AdminModule,
     StudentModule,
     PrismaModule,
+    CourseModule,
   ],
   controllers: [],
   providers: [],

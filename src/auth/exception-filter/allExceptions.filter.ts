@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HttpAdapterHost } from '@nestjs/core';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
@@ -23,9 +24,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
       exception instanceof HttpException
         ? exception.getStatus()
         : HttpStatus.INTERNAL_SERVER_ERROR;
+
     const body = {
       statusCode: httpStatus,
-      message: exception.message,
+      message: getErrorMessage(exception),
     };
 
     if (this.config.get('NODE_ENV') === 'development') {
@@ -35,3 +37,27 @@ export class AllExceptionsFilter implements ExceptionFilter {
     httpAdapter.reply(response, body, httpStatus);
   }
 }
+
+export interface BadRequestValidationExceptionResponse {
+  statusCode: number;
+  message: any;
+  error: string;
+}
+
+export const getErrorMessage = <T>(exception: T): any => {
+  let errorMessage: string;
+
+  if (exception instanceof HttpException) {
+    const errorResponse = exception.getResponse();
+
+    errorMessage =
+      (errorResponse as BadRequestValidationExceptionResponse).message ||
+      exception.message;
+  } else if (exception instanceof PrismaClientKnownRequestError) {
+    errorMessage = exception.meta.cause as string;
+  } else {
+    errorMessage = String(exception);
+  }
+
+  return errorMessage;
+};
