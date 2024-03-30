@@ -11,6 +11,12 @@ import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 export class CourseService {
   constructor(private prisma: PrismaService) {}
 
+  async getAllCourses() {
+    const courses = await this.prisma.course.findMany();
+
+    return courses;
+  }
+
   async createCourse(dto: CreateCourseDto) {
     const course = await this.prisma.course.create({
       data: {
@@ -80,5 +86,15 @@ export class CourseService {
           throw new ConflictException('Duplicated course enrollments');
       }
     }
+  }
+
+  async getEnrolledCourses(userId: number) {
+    const enrolledCourses = await this.prisma.courseEnrollMent.findMany({
+      where: {
+        userId,
+      },
+    });
+
+    return enrolledCourses;
   }
 }

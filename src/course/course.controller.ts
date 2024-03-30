@@ -20,9 +20,20 @@ import { CourseUserRole } from '@prisma/client';
 export class CourseController {
   constructor(private courseService: CourseService) {}
 
+  @Get()
+  async getAllCourses() {
+    console.log('here');
+    return await this.courseService.getAllCourses();
+  }
+
   @Post()
   async createCourse(@Body() dto: CreateCourseDto) {
     return await this.courseService.createCourse(dto);
+  }
+
+  @Get('/courseEnrollments')
+  async getCourseEnrollments(@GetUser('id') userId: number) {
+    return await this.courseService.getEnrolledCourses(userId);
   }
 
   @Patch('/:id')
