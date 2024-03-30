@@ -14,15 +14,139 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @unique @default(autoincrement())
-  googleId  String?  @unique
-  name      String?
-  email     String   @unique
-  password  String?
-  role      Role     @default(STUDENT)
-  isActive  Boolean  @default(true)
+  id                    Int                    @id @unique @default(autoincrement())
+  googleId              String?                @unique
+  name                  String?
+  email                 String                 @unique
+  password              String?
+  role                  Role                   @default(STUDENT)
+  isActive              Boolean                @default(true)
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  courseEnrollMents     CourseEnrollMent[]
+  assignmentSubmissions AssignmentSubmission[]
+  courseGrades          CourseGrade[]
+}
+
+model Course {
+  id                Int                @id @unique @default(autoincrement())
+  name              String
+  courseDetails     String?
+  courseEnrollMents CourseEnrollMent[]
+  lessons           Lesson[]
+  courseGrades      CourseGrade[]
+}
+
+model CourseEnrollMent {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  userId   Int
+  user     User   @relation(fields: [userId], references: [id])
+  courseId Int
+  course   Course @relation(fields: [courseId], references: [id])
+
+  role         CourseUserRole
+  courseGrades CourseGrade[]
+
+  @@id([userId, courseId])
+  @@index([userId])
+}
+
+model CourseGrade {
+  id       Int @id @unique @default(autoincrement())
+  userId   Int
+  courseId Int
+
+  courseEnrollment CourseEnrollMent @relation(fields: [userId, courseId], references: [userId, courseId])
+
+  User   User   @relation(fields: [userId], references: [id])
+  Course Course @relation(fields: [courseId], references: [id])
+
+  status GradeStatus @default(NORMAL)
+  value  Int         @default(40)
+}
+
+model Lesson {
+  id Int @id @unique @default(autoincrement())
+
+  courseId Int
+  course   Course @relation(fields: [courseId], references: [id])
+
+  title       String
+  description String?
+
+  episodes    Episode[]
+  assignments Assignment[]
+}
+
+model Assignment {
+  id Int @id @unique @default(autoincrement())
+
+  lessonId Int
+  lesson   Lesson @relation(fields: [lessonId], references: [id])
+
+  title       String
+  description String
+
+  assignmentUploadedFiles AssignmentUploadedFile[]
+  assignmentSubmissions   AssignmentSubmission[]
+}
+
+model AssignmentSubmission {
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+
+  assignmentId Int
+  assignment   Assignment @relation(fields: [assignmentId], references: [id])
+
+  graderBy  String?
+  result    Int?
+  isChecked Boolean @default(false)
+
+  @@id([userId, assignmentId])
+}
+
+model AssignmentUploadedFile {
+  id Int @id @unique @default(autoincrement())
+
+  assignmentId Int
+  assignment   Assignment @relation(fields: [assignmentId], references: [id])
+
+  name String
+}
+
+model Episode {
+  id Int @id @unique @default(autoincrement())
+
+  lessonId Int
+  lesson   Lesson @relation(fields: [lessonId], references: [id])
+
+  title     String
+  Resources Resource[]
+}
+
+model Resource {
+  id Int @id @unique @default(autoincrement())
+
+  episodeId Int
+  episode   Episode @relation(fields: [episodeId], references: [id])
+  link      String
+}
+
+enum GradeStatus {
+  NORMAL
+  GOOD
+  BAD
+  EXCELLENT
+}
+
+enum CourseUserRole {
+  STUDENT
+  TEACHER
 }
 
 enum Role {
