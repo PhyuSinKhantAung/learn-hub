@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -45,6 +46,10 @@ export class AuthService {
     console.log({ user });
 
     if (!user) throw new NotFoundException('User not found');
+
+    if (user.googleId && !user.password) {
+      throw new BadRequestException('User not found with this password');
+    }
 
     const isValidPassword = await argon.verify(user.password, dto.password);
     console.log({ isValidPassword });
