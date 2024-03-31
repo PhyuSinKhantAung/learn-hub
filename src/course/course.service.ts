@@ -14,7 +14,7 @@ export class CourseService {
   async getAllCourses() {
     const courses = await this.prisma.course.findMany();
 
-    return courses;
+    return { data: courses, count: courses.length };
   }
 
   async createCourse(dto: CreateCourseDto) {
@@ -88,11 +88,13 @@ export class CourseService {
     }
   }
 
-  async getEnrolledCourses(userId: number) {
+  async getEnrolledCourses(userId: number | undefined) {
+    const filter = {
+      ...(userId ? { userId } : {}),
+    };
+
     const enrolledCourses = await this.prisma.courseEnrollMent.findMany({
-      where: {
-        userId,
-      },
+      where: filter,
     });
 
     return enrolledCourses;

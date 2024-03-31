@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -15,16 +9,16 @@ datasource db {
 
 model User {
   id                    Int                    @id @unique @default(autoincrement())
-  googleId              String?                @unique
   name                  String?
   email                 String                 @unique
-  password              String?
   role                  Role                   @default(STUDENT)
   isActive              Boolean                @default(true)
   createdAt             DateTime               @default(now())
   updatedAt             DateTime               @updatedAt
-  courseEnrollMents     CourseEnrollMent[]
+  password              String?
+  googleId              String?                @unique
   assignmentSubmissions AssignmentSubmission[]
+  courseEnrollMents     CourseEnrollMent[]
   courseGrades          CourseGrade[]
 }
 
@@ -33,20 +27,18 @@ model Course {
   name              String
   courseDetails     String?
   courseEnrollMents CourseEnrollMent[]
-  lessons           Lesson[]
   courseGrades      CourseGrade[]
+  lessons           Lesson[]
 }
 
 model CourseEnrollMent {
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  userId   Int
-  user     User   @relation(fields: [userId], references: [id])
-  courseId Int
-  course   Course @relation(fields: [courseId], references: [id])
-
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  userId       Int
+  courseId     Int
   role         CourseUserRole
+  course       Course         @relation(fields: [courseId], references: [id])
+  user         User           @relation(fields: [userId], references: [id])
   courseGrades CourseGrade[]
 
   @@id([userId, courseId])
@@ -54,87 +46,70 @@ model CourseEnrollMent {
 }
 
 model CourseGrade {
-  id       Int @id @unique @default(autoincrement())
-  userId   Int
-  courseId Int
-
+  id               Int              @id @unique @default(autoincrement())
+  userId           Int
+  courseId         Int
+  status           GradeStatus      @default(NORMAL)
+  value            Int              @default(40)
+  Course           Course           @relation(fields: [courseId], references: [id])
   courseEnrollment CourseEnrollMent @relation(fields: [userId, courseId], references: [userId, courseId])
-
-  User   User   @relation(fields: [userId], references: [id])
-  Course Course @relation(fields: [courseId], references: [id])
-
-  status GradeStatus @default(NORMAL)
-  value  Int         @default(40)
+  User             User             @relation(fields: [userId], references: [id])
 }
 
 model Lesson {
-  id Int @id @unique @default(autoincrement())
-
-  courseId Int
-  course   Course @relation(fields: [courseId], references: [id])
-
+  id          Int          @id @unique @default(autoincrement())
+  courseId    Int
   title       String
   description String?
-
-  episodes    Episode[]
   assignments Assignment[]
+  episodes    Episode[]
+  course      Course       @relation(fields: [courseId], references: [id])
 }
 
 model Assignment {
-  id Int @id @unique @default(autoincrement())
-
-  lessonId Int
-  lesson   Lesson @relation(fields: [lessonId], references: [id])
-
-  title       String
-  description String
-
-  assignmentUploadedFiles AssignmentUploadedFile[]
+  id                      Int                      @id @unique @default(autoincrement())
+  lessonId                Int
+  title                   String
+  description             String
+  lesson                  Lesson                   @relation(fields: [lessonId], references: [id])
   assignmentSubmissions   AssignmentSubmission[]
+  assignmentUploadedFiles AssignmentUploadedFile[]
 }
 
 model AssignmentSubmission {
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  userId Int
-  user   User @relation(fields: [userId], references: [id])
-
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  userId       Int
   assignmentId Int
+  graderBy     String?
+  result       Int?
+  isChecked    Boolean    @default(false)
   assignment   Assignment @relation(fields: [assignmentId], references: [id])
-
-  graderBy  String?
-  result    Int?
-  isChecked Boolean @default(false)
+  user         User       @relation(fields: [userId], references: [id])
 
   @@id([userId, assignmentId])
 }
 
 model AssignmentUploadedFile {
-  id Int @id @unique @default(autoincrement())
-
+  id           Int        @id @unique @default(autoincrement())
   assignmentId Int
+  name         String
   assignment   Assignment @relation(fields: [assignmentId], references: [id])
-
-  name String
 }
 
 model Episode {
-  id Int @id @unique @default(autoincrement())
-
-  lessonId Int
-  lesson   Lesson @relation(fields: [lessonId], references: [id])
-
+  id        Int        @id @unique @default(autoincrement())
+  lessonId  Int
   title     String
+  lesson    Lesson     @relation(fields: [lessonId], references: [id])
   Resources Resource[]
 }
 
 model Resource {
-  id Int @id @unique @default(autoincrement())
-
+  id        Int     @id @unique @default(autoincrement())
   episodeId Int
-  episode   Episode @relation(fields: [episodeId], references: [id])
   link      String
+  episode   Episode @relation(fields: [episodeId], references: [id])
 }
 
 enum GradeStatus {
@@ -151,7 +126,7 @@ enum CourseUserRole {
 
 enum Role {
   STUDENT
+  ADMIN
   TEACHER
   SUPERADMIN
-  ADMIN
 }

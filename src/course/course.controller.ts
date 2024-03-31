@@ -12,30 +12,35 @@ import { CreateCourseDto } from './dto';
 import { CourseService } from './course.service';
 import { EditCourseDto } from './dto/editCourse.dto';
 import { JwtGuard } from 'src/auth/guard/jwt.guard';
-import { GetUser } from 'src/auth/decorator';
-import { CourseUserRole } from '@prisma/client';
+import { GetUser, Roles } from 'src/auth/decorator';
+import { CourseUserRole, Role } from '@prisma/client';
+import { RoleGuard } from 'src/auth/guard/role.guard';
 
-@UseGuards(JwtGuard)
 @Controller('courses')
 export class CourseController {
   constructor(private courseService: CourseService) {}
 
   @Get()
   async getAllCourses() {
-    console.log('here');
     return await this.courseService.getAllCourses();
   }
 
+  @Roles(Role.TEACHER)
+  @UseGuards(JwtGuard, RoleGuard)
   @Post()
   async createCourse(@Body() dto: CreateCourseDto) {
     return await this.courseService.createCourse(dto);
   }
 
+  @Roles(Role.STUDENT)
+  @UseGuards(JwtGuard, RoleGuard)
   @Get('/courseEnrollments')
   async getCourseEnrollments(@GetUser('id') userId: number) {
     return await this.courseService.getEnrolledCourses(userId);
   }
 
+  @Roles(Role.TEACHER)
+  @UseGuards(JwtGuard, RoleGuard)
   @Patch('/:id')
   async editCourse(@Body() dto: EditCourseDto, @Param('id') id: number) {
     return await this.courseService.editCourse(dto, id);
@@ -45,10 +50,16 @@ export class CourseController {
   async getCourseById(@Param('id') id: number) {
     return await this.courseService.getCourseById(id);
   }
+
+  @Roles(Role.ADMIN, Role.SUPERADMIN)
+  @UseGuards(JwtGuard, RoleGuard)
   @Delete('/:id')
   async deleteCourse(@Param('id') id: number) {
     return await this.courseService.deleteCourse(id);
   }
+
+  @Roles(Role.STUDENT)
+  @UseGuards(JwtGuard, RoleGuard)
   @Post('/:id/courseEnrollments')
   async enrollCourse(
     @Param('id') id: number,
