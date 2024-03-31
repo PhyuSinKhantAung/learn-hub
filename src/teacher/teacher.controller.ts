@@ -13,7 +13,6 @@ export class TeacherController {
   constructor(private teacherService: TeacherService) {}
   @Post()
   async createTeacher(@Body() dto: CreateTeacherDto) {
-    console.log({ dto });
     return this.teacherService.createTeacher(dto);
   }
 }

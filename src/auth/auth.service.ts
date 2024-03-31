@@ -43,8 +43,6 @@ export class AuthService {
       },
     });
 
-    console.log({ user });
-
     if (!user) throw new NotFoundException('User not found');
 
     if (user.googleId && !user.password) {
@@ -52,13 +50,11 @@ export class AuthService {
     }
 
     const isValidPassword = await argon.verify(user.password, dto.password);
-    console.log({ isValidPassword });
 
     if (!isValidPassword) throw new ForbiddenException('Credentials incorrect');
 
     const payload = { sub: user.id, email: user.email, role: user.role };
 
-    console.log({ payload });
     return this.generateToken(payload);
   }
 
