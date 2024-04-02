@@ -39,6 +39,13 @@ export class CourseController {
     return await this.courseService.getEnrolledCourses(userId);
   }
 
+  @Roles(Role.ADMIN, Role.SUPERADMIN)
+  @UseGuards(JwtGuard, RoleGuard)
+  @Get('/allCourseEnrollments')
+  async getAllCourseEnrollments() {
+    return await this.courseService.getEnrolledCourses();
+  }
+
   @Roles(Role.TEACHER)
   @UseGuards(JwtGuard, RoleGuard)
   @Patch('/:id')

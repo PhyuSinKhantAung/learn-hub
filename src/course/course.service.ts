@@ -88,7 +88,7 @@ export class CourseService {
     }
   }
 
-  async getEnrolledCourses(userId: number | undefined) {
+  async getEnrolledCourses(userId?: number | undefined) {
     const filter = {
       ...(userId ? { userId } : {}),
     };
