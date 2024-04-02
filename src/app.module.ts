@@ -7,6 +7,7 @@ import { StudentModule } from './student/student.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ConfigModule } from '@nestjs/config';
 import { CourseModule } from './course/course.module';
+import { LessonModule } from './lesson/lesson.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { CourseModule } from './course/course.module';
     StudentModule,
     PrismaModule,
     CourseModule,
+    LessonModule,
   ],
   controllers: [],
   providers: [],
