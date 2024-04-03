@@ -14,7 +14,6 @@ export class LessonController {
   @UseGuards(JwtGuard, RoleGuard)
   @Post()
   async createLesson(@Body() dto: CreateLessonDto) {
-    console.log({ dto });
     return this.lessonService.createLesson(dto);
   }
 }

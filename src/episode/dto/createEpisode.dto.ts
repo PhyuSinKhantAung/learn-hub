@@ -1,4 +1,10 @@
-import { IsArray, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class CreateEpisodeDto {
   @IsString()
@@ -10,5 +16,7 @@ export class CreateEpisodeDto {
   lessonId: number;
 
   @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
   resources: string[];
 }
