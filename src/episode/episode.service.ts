@@ -23,4 +23,17 @@ export class EpisodeService {
 
     return episode;
   }
+
+  async getEpisodesByLessonId(lessonId: string) {
+    const episodes = await this.prisma.episode.findMany({
+      where: {
+        lessonId: +lessonId,
+      },
+      include: {
+        resources: true,
+      },
+    });
+
+    return { data: episodes, count: episodes.length };
+  }
 }
