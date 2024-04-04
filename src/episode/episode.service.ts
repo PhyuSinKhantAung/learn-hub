@@ -7,13 +7,13 @@ export class EpisodeService {
   constructor(private prisma: PrismaService) {}
 
   async createEpisode(dto: CreateEpisodeDto) {
-    const r = dto.resources.map((link) => {
+    const r = dto?.resources?.map((link) => {
       return { link };
     });
 
     const episode = await this.prisma.episode.create({
       data: {
-        lessonId: dto.lessonId,
+        lessonId: +dto.lessonId,
         title: dto.title,
         resources: {
           create: r,
