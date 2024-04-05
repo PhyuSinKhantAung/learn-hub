@@ -1,4 +1,8 @@
 import {
+  editFileName,
+  rightFileFormatFilter,
+} from './../utils/file-uploading.utils';
+import {
   Body,
   Controller,
   Get,
@@ -16,14 +20,22 @@ import { Roles } from 'src/auth/decorator';
 import { Role } from '@prisma/client';
 import { CreateEpisodeDto } from './dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-
+import { diskStorage } from 'multer';
 @Controller('episodes')
 export class EpisodeController {
   constructor(private episodeService: EpisodeService) {}
 
   @Roles(Role.TEACHER)
   @UseGuards(JwtGuard, RoleGuard)
-  @UseInterceptors(FileInterceptor('image'))
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './uploads',
+        filename: editFileName,
+      }),
+      fileFilter: rightFileFormatFilter,
+    }),
+  )
   @Post()
   async createEpisode(
     @Body() dto: CreateEpisodeDto,
@@ -35,7 +47,7 @@ export class EpisodeController {
       fileName: file.fieldname,
     };
     console.log({ extractedFile });
-    return await this.episodeService.createEpisode(dto);
+    return await this.episodeService.createEpisode(dto, file);
   }
 
   @Roles(Role.STUDENT, Role.TEACHER)

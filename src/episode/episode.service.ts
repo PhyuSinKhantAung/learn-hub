@@ -6,7 +6,8 @@ import { CreateEpisodeDto } from './dto';
 export class EpisodeService {
   constructor(private prisma: PrismaService) {}
 
-  async createEpisode(dto: CreateEpisodeDto) {
+  async createEpisode(dto: CreateEpisodeDto, files: any) {
+    console.log(files);
     const r = dto?.resources?.map((link) => {
       return { link };
     });

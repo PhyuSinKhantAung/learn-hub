@@ -24,7 +24,7 @@ import { MulterModule } from '@nestjs/platform-express';
     LessonModule,
     EpisodeModule,
     MulterModule.register({
-      dest: '../files',
+      dest: './uploads',
     }),
   ],
   controllers: [],
