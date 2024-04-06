@@ -10,6 +10,7 @@ import { CourseModule } from './course/course.module';
 import { LessonModule } from './lesson/lesson.module';
 import { EpisodeModule } from './episode/episode.module';
 import { MulterModule } from '@nestjs/platform-express';
+import { FileModule } from './file/file.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { MulterModule } from '@nestjs/platform-express';
     MulterModule.register({
       dest: './uploads',
     }),
+    FileModule,
   ],
   controllers: [],
   providers: [],

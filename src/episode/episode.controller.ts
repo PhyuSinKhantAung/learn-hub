@@ -3,10 +3,8 @@ import {
   Body,
   Controller,
   Get,
-  Param,
   Post,
   Query,
-  Res,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
@@ -54,12 +52,5 @@ export class EpisodeController {
   @Get()
   async getEpisodesByLessonId(@Query('lessonId') lessonId: string) {
     return await this.episodeService.getEpisodesByLessonId(lessonId);
-  }
-
-  @Roles(Role.STUDENT, Role.TEACHER, Role.ADMIN)
-  @UseGuards(JwtGuard, RoleGuard)
-  @Get('/:filePathname')
-  getUplodedFile(@Param('filePathname') file, @Res() res) {
-    return res.sendFile(file, { root: './uploads' });
   }
 }
