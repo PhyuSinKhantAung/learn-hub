@@ -1,6 +1,7 @@
+//TODO will fix this functions later!!
 import { extname } from 'path';
 
-export const rightFileFormatFilter = (_req: any, file: any, callback: any) => {
+export const fileFormatFilter = (_req: any, file: any, callback: any) => {
   if (file.originalname.match(/\.(jpg|jpeg|png|gif|pdf)$/)) {
     callback(null, true);
   } else {
@@ -8,7 +9,7 @@ export const rightFileFormatFilter = (_req: any, file: any, callback: any) => {
   }
 };
 
-export const editFileName = (_req: any, file: any, callback: any) => {
+export const getFilename = (_req: any, file: any, callback: any) => {
   const name = file.originalname.split('.')[0];
   const fileExtName = extname(file.originalname);
   const randomName = Array(4)

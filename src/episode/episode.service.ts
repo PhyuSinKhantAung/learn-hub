@@ -2,23 +2,41 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateEpisodeDto } from './dto';
 
+type File = {
+  pathname: string;
+  name: string;
+};
+
 @Injectable()
 export class EpisodeService {
   constructor(private prisma: PrismaService) {}
 
-  async createEpisode(dto: CreateEpisodeDto, files: any) {
+  async createEpisode(dto: CreateEpisodeDto, files: File[]) {
     console.log(files);
+    console.log(dto.resources);
     const r = dto?.resources?.map((link) => {
       return { link };
     });
 
+    console.log('here', dto);
     const episode = await this.prisma.episode.create({
       data: {
         lessonId: +dto.lessonId,
         title: dto.title,
-        resources: {
-          create: r,
-        },
+        ...(dto.resources
+          ? {
+              resources: {
+                create: r,
+              },
+            }
+          : {}),
+        ...(files.length !== 0
+          ? {
+              files: {
+                create: files,
+              },
+            }
+          : {}),
       },
     });
 

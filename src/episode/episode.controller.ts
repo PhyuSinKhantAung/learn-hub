@@ -1,15 +1,13 @@
-import {
-  editFileName,
-  rightFileFormatFilter,
-} from './../utils/file-uploading.utils';
+import { fileFormatFilter, getFilename } from './../utils/file-uploading.utils';
 import {
   Body,
   Controller,
   Get,
+  Param,
   Post,
   Query,
-  UploadedFile,
-  // UploadedFiles,
+  Res,
+  UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -19,7 +17,7 @@ import { RoleGuard } from 'src/auth/guard/role.guard';
 import { Roles } from 'src/auth/decorator';
 import { Role } from '@prisma/client';
 import { CreateEpisodeDto } from './dto';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 @Controller('episodes')
 export class EpisodeController {
@@ -28,26 +26,27 @@ export class EpisodeController {
   @Roles(Role.TEACHER)
   @UseGuards(JwtGuard, RoleGuard)
   @UseInterceptors(
-    FileInterceptor('file', {
+    FilesInterceptor('files', 5, {
       storage: diskStorage({
         destination: './uploads',
-        filename: editFileName,
+        filename: getFilename,
       }),
-      fileFilter: rightFileFormatFilter,
+      fileFilter: fileFormatFilter,
     }),
   )
   @Post()
   async createEpisode(
     @Body() dto: CreateEpisodeDto,
-    @UploadedFile() file: any,
+    @UploadedFiles() files: Array<Express.Multer.File>,
   ) {
-    console.log({ file });
-    const extractedFile = {
-      originalName: file.originalname,
-      fileName: file.fieldname,
-    };
-    console.log({ extractedFile });
-    return await this.episodeService.createEpisode(dto, file);
+    const reshapedFiles = files.map((file) => {
+      return {
+        pathname: file.filename,
+        name: file.originalname,
+      };
+    });
+
+    return await this.episodeService.createEpisode(dto, reshapedFiles);
   }
 
   @Roles(Role.STUDENT, Role.TEACHER)
@@ -55,5 +54,12 @@ export class EpisodeController {
   @Get()
   async getEpisodesByLessonId(@Query('lessonId') lessonId: string) {
     return await this.episodeService.getEpisodesByLessonId(lessonId);
+  }
+
+  // @Roles(Role.STUDENT, Role.TEACHER, Role.ADMIN)
+  // @UseGuards(JwtGuard, RoleGuard)
+  @Get('/:filePathname')
+  getUplodedFile(@Param('filePathname') file, @Res() res) {
+    return res.sendFile(file, { root: './uploads' });
   }
 }
