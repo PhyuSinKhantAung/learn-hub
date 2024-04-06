@@ -1,11 +1,17 @@
 //TODO will fix this functions later!!
+import { BadRequestException } from '@nestjs/common';
 import { extname } from 'path';
 
 export const fileFormatFilter = (_req: any, file: any, callback: any) => {
-  if (file.originalname.match(/\.(jpg|jpeg|png|gif|pdf)$/)) {
+  if (file.originalname.match(/\.(jpg|jpeg|png|gif|pdf|docx|pptx)$/)) {
     callback(null, true);
   } else {
-    return callback(new Error('Only right file formats are allowed!'), false);
+    return callback(
+      new BadRequestException(
+        `Unsupported file type ${extname(file.originalname)}`,
+      ),
+      false,
+    );
   }
 };
 
