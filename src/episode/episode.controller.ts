@@ -56,8 +56,8 @@ export class EpisodeController {
     return await this.episodeService.getEpisodesByLessonId(lessonId);
   }
 
-  // @Roles(Role.STUDENT, Role.TEACHER, Role.ADMIN)
-  // @UseGuards(JwtGuard, RoleGuard)
+  @Roles(Role.STUDENT, Role.TEACHER, Role.ADMIN)
+  @UseGuards(JwtGuard, RoleGuard)
   @Get('/:filePathname')
   getUplodedFile(@Param('filePathname') file, @Res() res) {
     return res.sendFile(file, { root: './uploads' });

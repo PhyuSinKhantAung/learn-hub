@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateEpisodeDto } from './dto';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 type File = {
   pathname: string;
@@ -12,35 +13,39 @@ export class EpisodeService {
   constructor(private prisma: PrismaService) {}
 
   async createEpisode(dto: CreateEpisodeDto, files: File[]) {
-    console.log(files);
-    console.log(dto.resources);
-    const r = dto?.resources?.map((link) => {
-      return { link };
-    });
+    try {
+      const r = dto?.resources?.map((link) => {
+        return { link };
+      });
 
-    console.log('here', dto);
-    const episode = await this.prisma.episode.create({
-      data: {
-        lessonId: +dto.lessonId,
-        title: dto.title,
-        ...(dto.resources
-          ? {
-              resources: {
-                create: r,
-              },
-            }
-          : {}),
-        ...(files.length !== 0
-          ? {
-              files: {
-                create: files,
-              },
-            }
-          : {}),
-      },
-    });
+      const episode = await this.prisma.episode.create({
+        data: {
+          lessonId: +dto.lessonId,
+          title: dto.title,
+          ...(dto.resources
+            ? {
+                resources: {
+                  create: r,
+                },
+              }
+            : {}),
+          ...(files.length !== 0
+            ? {
+                files: {
+                  create: files,
+                },
+              }
+            : {}),
+        },
+      });
 
-    return episode;
+      return episode;
+    } catch (error) {
+      if (error instanceof PrismaClientKnownRequestError) {
+        if (error.code === 'P2003')
+          throw new NotFoundException('Lesson not found');
+      }
+    }
   }
 
   async getEpisodesByLessonId(lessonId: string) {
@@ -50,6 +55,7 @@ export class EpisodeService {
       },
       include: {
         resources: true,
+        files: true,
       },
     });
 
