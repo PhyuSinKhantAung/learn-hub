@@ -14,6 +14,25 @@ export class AssignmentService {
     private userService: UserService,
   ) {}
 
+  async getAssignments(dto: GetAssignmentsDto) {
+    const assignments = await this.prisma.assignment.findMany({
+      where: {
+        episodeId: +dto.episodeId,
+      },
+    });
+    return { data: assignments, count: assignments.length };
+  }
+
+  async getAssignmentSubmissions(assignmentId: string) {
+    const submissions = await this.prisma.assignmentSubmission.findMany({
+      where: {
+        assignmentId: +assignmentId,
+      },
+    });
+
+    return submissions;
+  }
+
   async createAssignment(dto: CreateAssignmentDto) {
     try {
       const assignment = await this.prisma.assignment.create({
@@ -30,15 +49,6 @@ export class AssignmentService {
         }
       }
     }
-  }
-
-  async getAssignments(dto: GetAssignmentsDto) {
-    const assignments = await this.prisma.assignment.findMany({
-      where: {
-        episodeId: +dto.episodeId,
-      },
-    });
-    return { data: assignments, count: assignments.length };
   }
 
   async submitAssignment(

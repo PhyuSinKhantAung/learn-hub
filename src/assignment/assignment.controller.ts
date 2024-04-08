@@ -26,6 +26,21 @@ import { fileFormatFilter, getFilename } from 'src/utils/file-uploading.utils';
 export class AssignmentController {
   constructor(private assignmentService: AssignmentService) {}
 
+  @Get()
+  @UseGuards(JwtGuard)
+  async getAssignments(@Query('episodeId') episodeId: string) {
+    Logger.log({ episodeId });
+    return this.assignmentService.getAssignments({ episodeId });
+  }
+
+  @Roles(Role.TEACHER)
+  @UseGuards(JwtGuard)
+  @Get('/submissions')
+  async getAssignmentSubmissions(@Query('assignmentId') assignmentId: string) {
+    Logger.log({ assignmentId });
+    return this.assignmentService.getAssignmentSubmissions(assignmentId);
+  }
+
   @Roles(Role.TEACHER)
   @UseGuards(JwtGuard, RoleGuard)
   @Post()
@@ -33,12 +48,6 @@ export class AssignmentController {
     Logger.log({ dto });
 
     return this.assignmentService.createAssignment(dto);
-  }
-
-  @Get()
-  async getAssignments(@Query('episodeId') episodeId: string) {
-    Logger.log({ episodeId });
-    return this.assignmentService.getAssignments({ episodeId });
   }
 
   @Roles(Role.STUDENT)
