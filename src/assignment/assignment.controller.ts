@@ -4,13 +4,15 @@ import {
   Controller,
   Get,
   Logger,
+  Param,
+  Patch,
   Post,
   Query,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { CreateAssignmentDto } from './dto';
+import { CreateAssignmentDto, GradeAssignmentSubmissionDto } from './dto';
 import { JwtGuard } from 'src/auth/guard/jwt.guard';
 import { RoleGuard } from 'src/auth/guard/role.guard';
 import { GetUser, Roles } from 'src/auth/decorator';
@@ -50,8 +52,9 @@ export class AssignmentController {
       fileFilter: fileFormatFilter,
     }),
   )
-  @Post('/submissions')
+  @Post('/:assignmentId/submissions')
   async submitAssignment(
+    @Param('assignmentId') assignmentId: string,
     @Body() dto: CreateAssignmentSubmissionDto,
     @UploadedFiles() files: Array<Express.Multer.File>,
     @GetUser('id') userId: number,
@@ -65,6 +68,27 @@ export class AssignmentController {
         userId,
       };
     });
-    return this.assignmentService.submitAssignment(dto, reshapedFiles);
+    return this.assignmentService.submitAssignment(
+      assignmentId,
+      dto,
+      reshapedFiles,
+      userId,
+    );
+  }
+
+  @Roles(Role.TEACHER)
+  @UseGuards(JwtGuard, RoleGuard)
+  @Patch('/submissions/:submissionId')
+  async gradeAssignmentSubmission(
+    @Param('submissionId') submissionId: string,
+    @Body() dto: GradeAssignmentSubmissionDto,
+    @GetUser('id') userId: number,
+  ) {
+    Logger.log({ dto });
+    return this.assignmentService.gradeAssignmentSubmission(
+      dto,
+      submissionId,
+      userId,
+    );
   }
 }

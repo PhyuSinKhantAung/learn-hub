@@ -1,14 +1,18 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateAssignmentDto } from './dto';
+import { CreateAssignmentDto, GradeAssignmentSubmissionDto } from './dto';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { GetAssignmentsDto } from './dto/getAssignments.dto';
 import { CreateAssignmentSubmissionDto } from './dto/createAssignmentSubmission.dto';
 import { File } from 'src/utils/file-uploading.utils';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class AssignmentService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private userService: UserService,
+  ) {}
 
   async createAssignment(dto: CreateAssignmentDto) {
     try {
@@ -37,12 +41,19 @@ export class AssignmentService {
     return { data: assignments, count: assignments.length };
   }
 
-  async submitAssignment(dto: CreateAssignmentSubmissionDto, files: File[]) {
+  async submitAssignment(
+    assignmentId: string,
+    dto: CreateAssignmentSubmissionDto,
+    files: File[],
+    userId: number,
+  ) {
     Logger.log({ files });
     try {
       const submission = await this.prisma.assignmentSubmission.create({
         data: {
           ...dto,
+          assignmentId: +assignmentId,
+          userId,
           ...(files.length !== 0
             ? {
                 assignmentFiles: {
@@ -61,5 +72,27 @@ export class AssignmentService {
         }
       }
     }
+  }
+
+  async gradeAssignmentSubmission(
+    dto: GradeAssignmentSubmissionDto,
+    submissionId: string,
+    userId: number,
+  ) {
+    const user = await this.userService.getUserById(userId);
+
+    if (!user) throw new NotFoundException('User not found');
+
+    const submission = await this.prisma.assignmentSubmission.update({
+      where: {
+        id: +submissionId,
+      },
+      data: {
+        ...dto,
+        graderBy: user.name,
+      },
+    });
+
+    return submission;
   }
 }

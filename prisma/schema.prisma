@@ -86,13 +86,14 @@ model Assignment {
 }
 
 model AssignmentSubmission {
+  id Int @unique @default(autoincrement())
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  assignmentParagraph String
-  graderBy            String?
-  result              Int?
-  isChecked           Boolean @default(false)
+  graderBy  String?
+  result    Int?
+  isChecked Boolean @default(false)
 
   assignmentId Int
   assignment   Assignment @relation(fields: [assignmentId], references: [id])
