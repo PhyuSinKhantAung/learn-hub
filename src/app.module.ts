@@ -11,6 +11,7 @@ import { LessonModule } from './lesson/lesson.module';
 import { EpisodeModule } from './episode/episode.module';
 import { MulterModule } from '@nestjs/platform-express';
 import { FileModule } from './file/file.module';
+import { AssignmentModule } from './assignment/assignment.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { FileModule } from './file/file.module';
       dest: './uploads',
     }),
     FileModule,
+    AssignmentModule,
   ],
   controllers: [],
   providers: [],

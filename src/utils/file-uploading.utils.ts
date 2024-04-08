@@ -1,5 +1,6 @@
 //TODO will fix this functions later!!
 import { BadRequestException } from '@nestjs/common';
+import { FileType } from '@prisma/client';
 import { extname } from 'path';
 
 export const fileFormatFilter = (_req: any, file: any, callback: any) => {
@@ -23,4 +24,10 @@ export const getFilename = (_req: any, file: any, callback: any) => {
     .map(() => Math.round(Math.random() * 16).toString(16))
     .join('');
   callback(null, `${name}-${randomName}${fileExtName}`);
+};
+
+export type File = {
+  pathname: string;
+  name: string;
+  type: FileType;
 };

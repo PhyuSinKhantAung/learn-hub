@@ -2,11 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateEpisodeDto } from './dto';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
-
-type File = {
-  pathname: string;
-  name: string;
-};
+import { File } from 'src/utils/file-uploading.utils';
 
 @Injectable()
 export class EpisodeService {

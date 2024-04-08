@@ -8,18 +8,19 @@ datasource db {
 }
 
 model User {
-  id                    Int                    @id @unique @default(autoincrement())
-  name                  String?
-  email                 String                 @unique
-  role                  Role                   @default(STUDENT)
-  isActive              Boolean                @default(true)
-  createdAt             DateTime               @default(now())
-  updatedAt             DateTime               @updatedAt
-  password              String?
-  googleId              String?                @unique
-  assignmentSubmissions AssignmentSubmission[]
-  courseEnrollMents     CourseEnrollMent[]
-  courseGrades          CourseGrade[]
+  id                      Int                    @id @unique @default(autoincrement())
+  name                    String?
+  email                   String                 @unique
+  role                    Role                   @default(STUDENT)
+  isActive                Boolean                @default(true)
+  createdAt               DateTime               @default(now())
+  updatedAt               DateTime               @updatedAt
+  password                String?
+  googleId                String?                @unique
+  assignmentSubmissions   AssignmentSubmission[]
+  courseEnrollMents       CourseEnrollMent[]
+  courseGrades            CourseGrade[]
+  uploadedAssignmentFiles UploadedFile[]
 }
 
 model Course {
@@ -57,61 +58,66 @@ model CourseGrade {
 }
 
 model Lesson {
-  id          Int          @id @unique @default(autoincrement())
+  id          Int       @id @unique @default(autoincrement())
   courseId    Int
   title       String
   description String?
+  course      Course    @relation(fields: [courseId], references: [id])
+  Episode     Episode[]
+}
+
+model Episode {
+  id          Int            @id @unique @default(autoincrement())
+  lessonId    Int
+  title       String
+  lesson      Lesson         @relation(fields: [lessonId], references: [id])
+  resources   Resource[]
+  files       UploadedFile[]
   assignments Assignment[]
-  episodes    Episode[]
-  course      Course       @relation(fields: [courseId], references: [id])
 }
 
 model Assignment {
-  id                      Int                      @id @unique @default(autoincrement())
-  lessonId                Int
-  title                   String
-  description             String
-  lesson                  Lesson                   @relation(fields: [lessonId], references: [id])
-  assignmentSubmissions   AssignmentSubmission[]
-  assignmentUploadedFiles AssignmentUploadedFile[]
+  id                    Int                    @id @unique @default(autoincrement())
+  title                 String
+  description           String
+  episodeId             Int
+  episode               Episode                @relation(fields: [episodeId], references: [id])
+  assignmentSubmissions AssignmentSubmission[]
 }
 
 model AssignmentSubmission {
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  userId       Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  assignmentParagraph String
+  graderBy            String?
+  result              Int?
+  isChecked           Boolean @default(false)
+
   assignmentId Int
-  graderBy     String?
-  result       Int?
-  isChecked    Boolean    @default(false)
   assignment   Assignment @relation(fields: [assignmentId], references: [id])
-  user         User       @relation(fields: [userId], references: [id])
+
+  userId          Int
+  user            User           @relation(fields: [userId], references: [id])
+  assignmentFiles UploadedFile[]
 
   @@id([userId, assignmentId])
 }
 
-model AssignmentUploadedFile {
-  id           Int        @id @unique @default(autoincrement())
-  assignmentId Int
-  name         String
-  assignment   Assignment @relation(fields: [assignmentId], references: [id])
-}
-
-model Episode {
-  id        Int        @id @unique @default(autoincrement())
-  lessonId  Int
-  title     String
-  lesson    Lesson     @relation(fields: [lessonId], references: [id])
-  resources Resource[]
-  files     File[]
-}
-
-model File {
+model UploadedFile {
   name      String
-  id        Int     @id @default(autoincrement())
-  pathname  String  @unique
-  episodeId Int
-  episode   Episode @relation(fields: [episodeId], references: [id])
+  id        Int      @id @default(autoincrement())
+  pathname  String   @unique
+  episodeId Int?
+  episode   Episode? @relation(fields: [episodeId], references: [id])
+  type      FileType
+
+  user   User? @relation(fields: [userId], references: [id])
+  userId Int?
+
+  assignmentSubmission             AssignmentSubmission? @relation(fields: [assignmentSubmissionUserId, assignmentSubmissionAssignmentId], references: [userId, assignmentId])
+  assignmentSubmissionUserId       Int?
+  assignmentSubmissionAssignmentId Int?
 }
 
 model Resource {
@@ -119,6 +125,11 @@ model Resource {
   episodeId Int
   link      String
   episode   Episode @relation(fields: [episodeId], references: [id])
+}
+
+enum FileType {
+  ASSIGNNMENT
+  EPISODE
 }
 
 enum GradeStatus {

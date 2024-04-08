@@ -3,6 +3,8 @@ import {
   Body,
   Controller,
   Get,
+  Logger,
+  Param,
   Post,
   Query,
   UploadedFiles,
@@ -13,13 +15,17 @@ import { EpisodeService } from './episode.service';
 import { JwtGuard } from 'src/auth/guard/jwt.guard';
 import { RoleGuard } from 'src/auth/guard/role.guard';
 import { Roles } from 'src/auth/decorator';
-import { Role } from '@prisma/client';
+import { FileType, Role } from '@prisma/client';
 import { CreateEpisodeDto } from './dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
+import { AssignmentService } from 'src/assignment/assignment.service';
 @Controller('episodes')
 export class EpisodeController {
-  constructor(private episodeService: EpisodeService) {}
+  constructor(
+    private episodeService: EpisodeService,
+    private assignmentService: AssignmentService,
+  ) {}
 
   @Roles(Role.TEACHER)
   @UseGuards(JwtGuard, RoleGuard)
@@ -41,6 +47,7 @@ export class EpisodeController {
       return {
         pathname: file.filename,
         name: file.originalname,
+        type: FileType.EPISODE,
       };
     });
 
@@ -52,5 +59,13 @@ export class EpisodeController {
   @Get()
   async getEpisodesByLessonId(@Query('lessonId') lessonId: string) {
     return await this.episodeService.getEpisodesByLessonId(lessonId);
+  }
+
+  @UseGuards(JwtGuard)
+  @Get('/:episodeId/assignments')
+  async getAssignmentsByEpisodeId(@Param('episodeId') episodeId: string) {
+    Logger.log({ episodeId });
+
+    return this.assignmentService.getAssignments({ episodeId });
   }
 }
