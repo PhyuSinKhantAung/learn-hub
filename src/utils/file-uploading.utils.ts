@@ -4,7 +4,7 @@ import { FileType } from '@prisma/client';
 import { extname } from 'path';
 
 export const fileFormatFilter = (_req: any, file: any, callback: any) => {
-  if (file.originalname.match(/\.(jpg|jpeg|png|gif|pdf|docx|pptx)$/)) {
+  if (file.originalname.match(/\.(jpg|jpeg|png|gif|pdf|docx|pptx|mp3)$/)) {
     callback(null, true);
   } else {
     return callback(

@@ -52,6 +52,7 @@ export class EpisodeService {
       include: {
         resources: true,
         files: true,
+        assignments: true,
       },
     });
 

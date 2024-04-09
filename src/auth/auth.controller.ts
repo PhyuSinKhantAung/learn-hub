@@ -30,6 +30,7 @@ export class AuthController {
     @GetUser('role') role: string,
   ) {
     const payload = { sub: id, email, role };
+    console.log({ payload }, '---');
     return this.authService.generateToken(payload);
   }
 }

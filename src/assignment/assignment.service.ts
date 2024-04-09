@@ -1,8 +1,12 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateAssignmentDto, GradeAssignmentSubmissionDto } from './dto';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
-import { GetAssignmentsDto } from './dto/getAssignments.dto';
 import { CreateAssignmentSubmissionDto } from './dto/createAssignmentSubmission.dto';
 import { File } from 'src/utils/file-uploading.utils';
 import { UserService } from 'src/user/user.service';
@@ -14,10 +18,10 @@ export class AssignmentService {
     private userService: UserService,
   ) {}
 
-  async getAssignments(dto: GetAssignmentsDto) {
+  async getAssignmentsByEpisodeId(episodeId: string) {
     const assignments = await this.prisma.assignment.findMany({
       where: {
-        episodeId: +dto.episodeId,
+        episodeId: +episodeId,
       },
     });
     return { data: assignments, count: assignments.length };
@@ -28,9 +32,13 @@ export class AssignmentService {
       where: {
         assignmentId: +assignmentId,
       },
+      include: {
+        assignmentFiles: true,
+        assignment: true,
+      },
     });
 
-    return submissions;
+    return { data: submissions, count: submissions.length };
   }
 
   async createAssignment(dto: CreateAssignmentDto) {
@@ -57,14 +65,27 @@ export class AssignmentService {
     files: File[],
     userId: number,
   ) {
-    Logger.log({ files });
+    Logger.log({
+      data: {
+        ...dto,
+        assignmentId: +assignmentId,
+        userId,
+        ...(files?.length !== 0
+          ? {
+              assignmentFiles: {
+                create: files,
+              },
+            }
+          : {}),
+      },
+    });
     try {
       const submission = await this.prisma.assignmentSubmission.create({
         data: {
           ...dto,
           assignmentId: +assignmentId,
-          userId,
-          ...(files.length !== 0
+          userId: +userId,
+          ...(files && files?.length !== 0
             ? {
                 assignmentFiles: {
                   create: files,
@@ -76,9 +97,14 @@ export class AssignmentService {
 
       return submission;
     } catch (error) {
+      Logger.log({ error });
       if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2003') {
           throw new NotFoundException('Assignment Id or User Id not found');
+        }
+
+        if (error.code === 'P2002') {
+          throw new ConflictException('User already submitted this assignment');
         }
       }
     }
@@ -87,6 +113,7 @@ export class AssignmentService {
   async gradeAssignmentSubmission(
     dto: GradeAssignmentSubmissionDto,
     submissionId: string,
+    assignmentId: string,
     userId: number,
   ) {
     const user = await this.userService.getUserById(userId);
@@ -96,6 +123,7 @@ export class AssignmentService {
     const submission = await this.prisma.assignmentSubmission.update({
       where: {
         id: +submissionId,
+        assignmentId: +assignmentId,
       },
       data: {
         ...dto,

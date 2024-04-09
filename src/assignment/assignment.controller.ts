@@ -7,7 +7,6 @@ import {
   Param,
   Patch,
   Post,
-  Query,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
@@ -26,21 +25,6 @@ import { fileFormatFilter, getFilename } from 'src/utils/file-uploading.utils';
 export class AssignmentController {
   constructor(private assignmentService: AssignmentService) {}
 
-  @Get()
-  @UseGuards(JwtGuard)
-  async getAssignments(@Query('episodeId') episodeId: string) {
-    Logger.log({ episodeId });
-    return this.assignmentService.getAssignments({ episodeId });
-  }
-
-  @Roles(Role.TEACHER)
-  @UseGuards(JwtGuard)
-  @Get('/submissions')
-  async getAssignmentSubmissions(@Query('assignmentId') assignmentId: string) {
-    Logger.log({ assignmentId });
-    return this.assignmentService.getAssignmentSubmissions(assignmentId);
-  }
-
   @Roles(Role.TEACHER)
   @UseGuards(JwtGuard, RoleGuard)
   @Post()
@@ -48,6 +32,14 @@ export class AssignmentController {
     Logger.log({ dto });
 
     return this.assignmentService.createAssignment(dto);
+  }
+
+  @Roles(Role.TEACHER)
+  @UseGuards(JwtGuard)
+  @Get('/:assignmentId/submissions')
+  async getAssignmentSubmissions(@Param('assignmentId') assignmentId: string) {
+    Logger.log({ assignmentId });
+    return this.assignmentService.getAssignmentSubmissions(assignmentId);
   }
 
   @Roles(Role.STUDENT)
@@ -69,7 +61,7 @@ export class AssignmentController {
     @GetUser('id') userId: number,
   ) {
     Logger.log({ dto });
-    const reshapedFiles = files.map((file) => {
+    const reshapedFiles = files?.map((file) => {
       return {
         pathname: file.filename,
         name: file.originalname,
@@ -77,6 +69,8 @@ export class AssignmentController {
         userId,
       };
     });
+
+    Logger.log({ userId });
     return this.assignmentService.submitAssignment(
       assignmentId,
       dto,
@@ -87,9 +81,10 @@ export class AssignmentController {
 
   @Roles(Role.TEACHER)
   @UseGuards(JwtGuard, RoleGuard)
-  @Patch('/submissions/:submissionId')
+  @Patch('/:assignmentId/submissions/:submissionId')
   async gradeAssignmentSubmission(
     @Param('submissionId') submissionId: string,
+    @Param('assignmentId') assignmentId: string,
     @Body() dto: GradeAssignmentSubmissionDto,
     @GetUser('id') userId: number,
   ) {
@@ -97,6 +92,7 @@ export class AssignmentController {
     return this.assignmentService.gradeAssignmentSubmission(
       dto,
       submissionId,
+      assignmentId,
       userId,
     );
   }

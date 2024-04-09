@@ -66,6 +66,6 @@ export class EpisodeController {
   async getAssignmentsByEpisodeId(@Param('episodeId') episodeId: string) {
     Logger.log({ episodeId });
 
-    return this.assignmentService.getAssignments({ episodeId });
+    return this.assignmentService.getAssignmentsByEpisodeId(episodeId);
   }
 }

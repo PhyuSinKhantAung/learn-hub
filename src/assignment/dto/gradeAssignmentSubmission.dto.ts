@@ -1,10 +1,6 @@
-import { IsBoolean, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsNumber } from 'class-validator';
 
 export class GradeAssignmentSubmissionDto {
-  @IsString()
-  @IsNotEmpty()
-  graderBy: string;
-
   @IsNumber()
   @IsNotEmpty()
   result: number;

@@ -31,6 +31,7 @@ export class GoogleOAuthStrategy extends PassportStrategy(Strategy, 'google') {
         name: true,
         email: true,
         isActive: true,
+        id: true,
       },
     });
 
