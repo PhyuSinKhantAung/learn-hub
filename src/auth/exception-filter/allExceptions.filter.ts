@@ -30,6 +30,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     };
 
     if (this.config.get('NODE_ENV') === 'development') {
+      console.log('here');
       console.error(exception.stack);
       console.log(exception);
     }

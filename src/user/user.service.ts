@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as argon from 'argon2';
 import { CreateUserDto } from 'src/auth/dto/createUser.dto';
+import { UpdateUserDto } from 'src/auth/dto';
 
 @Injectable()
 export class UserService {
@@ -29,6 +30,29 @@ export class UserService {
     const user = await this.prisma.user.findUnique({
       where: {
         id,
+      },
+    });
+
+    return user;
+  }
+
+  async updateUserById(userId: number, dto: UpdateUserDto) {
+    const user = await this.prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        ...dto,
+        grade: {
+          upsert: {
+            update: {
+              value: dto.grade,
+            },
+            create: {
+              value: dto.grade,
+            },
+          },
+        },
       },
     });
 

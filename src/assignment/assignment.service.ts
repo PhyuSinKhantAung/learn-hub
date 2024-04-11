@@ -107,6 +107,8 @@ export class AssignmentService {
           throw new ConflictException('User already submitted this assignment');
         }
       }
+
+      throw error;
     }
   }
 
@@ -132,5 +134,29 @@ export class AssignmentService {
     });
 
     return submission;
+  }
+
+  async getAssignmentById(assignmentId: number) {
+    const assignment = await this.prisma.assignment.findUnique({
+      where: {
+        id: assignmentId,
+      },
+    });
+
+    return assignment;
+  }
+
+  async getUserAssignmentsResult(userId: number) {
+    const result = await this.prisma.assignmentSubmission.aggregate({
+      where: {
+        userId,
+      },
+
+      _sum: {
+        result: true,
+      },
+    });
+
+    return result;
   }
 }

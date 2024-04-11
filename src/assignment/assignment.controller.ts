@@ -1,3 +1,4 @@
+import { UserService } from 'src/user/user.service';
 import { AssignmentService } from './assignment.service';
 import {
   Body,
@@ -23,7 +24,10 @@ import { fileFormatFilter, getFilename } from 'src/utils/file-uploading.utils';
 
 @Controller('assignments')
 export class AssignmentController {
-  constructor(private assignmentService: AssignmentService) {}
+  constructor(
+    private assignmentService: AssignmentService,
+    private userService: UserService,
+  ) {}
 
   @Roles(Role.TEACHER)
   @UseGuards(JwtGuard, RoleGuard)
@@ -88,12 +92,21 @@ export class AssignmentController {
     @Body() dto: GradeAssignmentSubmissionDto,
     @GetUser('id') userId: number,
   ) {
-    Logger.log({ dto });
-    return this.assignmentService.gradeAssignmentSubmission(
+    const submission = await this.assignmentService.gradeAssignmentSubmission(
       dto,
       submissionId,
       assignmentId,
       userId,
     );
+
+    const {
+      _sum: { result },
+    } = await this.assignmentService.getUserAssignmentsResult(
+      submission.userId,
+    );
+
+    await this.userService.updateUserById(submission.userId, { grade: result });
+
+    return submission;
   }
 }

@@ -8,18 +8,21 @@ datasource db {
 }
 
 model User {
-  id                      Int                    @id @unique @default(autoincrement())
-  name                    String?
-  email                   String                 @unique
-  role                    Role                   @default(STUDENT)
-  isActive                Boolean                @default(true)
-  createdAt               DateTime               @default(now())
-  updatedAt               DateTime               @updatedAt
-  password                String?
-  googleId                String?                @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  id       Int     @id @unique @default(autoincrement())
+  name     String?
+  email    String  @unique
+  role     Role    @default(STUDENT)
+  isActive Boolean @default(true)
+  password String?
+  googleId String? @unique
+
+  grade Grade?
+
   assignmentSubmissions   AssignmentSubmission[]
   courseEnrollMents       CourseEnrollMent[]
-  courseGrades            CourseGrade[]
   uploadedAssignmentFiles UploadedFile[]
 }
 
@@ -28,33 +31,28 @@ model Course {
   name              String
   courseDetails     String?
   courseEnrollMents CourseEnrollMent[]
-  courseGrades      CourseGrade[]
   lessons           Lesson[]
 }
 
 model CourseEnrollMent {
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  userId       Int
-  courseId     Int
-  role         CourseUserRole
-  course       Course         @relation(fields: [courseId], references: [id])
-  user         User           @relation(fields: [userId], references: [id])
-  courseGrades CourseGrade[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  userId    Int
+  courseId  Int
+  role      CourseUserRole
+  course    Course         @relation(fields: [courseId], references: [id])
+  user      User           @relation(fields: [userId], references: [id])
 
   @@id([userId, courseId])
   @@index([userId])
 }
 
-model CourseGrade {
-  id               Int              @id @unique @default(autoincrement())
-  userId           Int
-  courseId         Int
-  status           GradeStatus      @default(NORMAL)
-  value            Int              @default(40)
-  Course           Course           @relation(fields: [courseId], references: [id])
-  courseEnrollment CourseEnrollMent @relation(fields: [userId, courseId], references: [userId, courseId])
-  User             User             @relation(fields: [userId], references: [id])
+model Grade {
+  id     Int         @id @unique @default(autoincrement())
+  status GradeStatus @default(NORMAL)
+  value  Int         @default(40)
+  userId Int         @unique
+  user   User        @relation(fields: [userId], references: [id])
 }
 
 model Lesson {
@@ -77,16 +75,20 @@ model Episode {
 }
 
 model Assignment {
-  id                    Int                    @id @unique @default(autoincrement())
-  title                 String
-  description           String
-  episodeId             Int
-  episode               Episode                @relation(fields: [episodeId], references: [id])
+  id          Int    @id @unique @default(autoincrement())
+  title       String
+  description String
+
+  episodeId Int
+  episode   Episode @relation(fields: [episodeId], references: [id])
+
   assignmentSubmissions AssignmentSubmission[]
 }
 
 model AssignmentSubmission {
   id Int @unique @default(autoincrement())
+
+  assignmentParagraph String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
