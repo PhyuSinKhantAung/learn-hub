@@ -113,6 +113,45 @@ describe('AppController (e2e)', () => {
     });
   });
 
+  describe('Teacher', () => {
+    const dto = {
+      name: 'Teacher Testing',
+      email: 'teachertesting@gmail.com',
+      password: 'teachertesting123456',
+    };
+
+    it('should get unauthenticated error', () => {
+      return pactum.spec().post('/teachers').withBody(dto).expectStatus(401);
+    });
+
+    it('create teacher with admin token', () => {
+      return pactum
+        .spec()
+        .post('/teachers')
+        .withBody(dto)
+        .expectStatus(201)
+        .withBearerToken('$S{adminToken}');
+    });
+
+    it('should signin as teacher', () => {
+      return pactum
+        .spec()
+        .post('/auth/signin')
+        .withBody(dto)
+        .expectStatus(200)
+        .stores('teacherToken', 'accessToken');
+    });
+
+    it('should get unauthorized error with teacher token while creating teacher', () => {
+      return pactum
+        .spec()
+        .post('/teachers')
+        .withBody(dto)
+        .expectStatus(403)
+        .withBearerToken('$S{teacherToken}');
+    });
+  });
+
   describe('Auth', () => {
     describe('Credentials', () => {
       const dto = {
