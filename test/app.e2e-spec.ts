@@ -212,4 +212,137 @@ describe('AppController (e2e)', () => {
       });
     });
   });
+
+  describe('Course', () => {
+    describe('Creating Course', () => {
+      const dto = {
+        name: 'English Testing Course',
+        description: 'This is testing description course details',
+      };
+
+      it('should get unauthenticated error', () => {
+        return pactum.spec().post('/courses').withBody(dto).expectStatus(401);
+      });
+
+      it('should get unauthorized error while creating course witha admin/superadmin token', () => {
+        return pactum
+          .spec()
+          .post('/courses')
+          .withBody(dto)
+          .expectStatus(403)
+          .withBearerToken('$S{adminToken}');
+      });
+
+      it('create course by teacher token', () => {
+        return pactum
+          .spec()
+          .post('/courses')
+          .withBody(dto)
+          .expectStatus(201)
+          .withBearerToken('$S{teacherToken}')
+          .stores('courseId', 'id');
+      });
+    });
+
+    describe('Getting Course', () => {
+      it('should get all courses without token', () => {
+        return pactum.spec().get('/courses').expectStatus(200);
+      });
+
+      it('should get all courses with student token', () => {
+        return pactum
+          .spec()
+          .get('/courses')
+          .withBearerToken('$S{studentToken}')
+          .expectStatus(200);
+      });
+
+      it('should get all courses with admin token', () => {
+        return pactum
+          .spec()
+          .get('/courses')
+          .withBearerToken('$S{adminToken}')
+          .expectStatus(200);
+      });
+
+      it('should get all courses with teacher token', () => {
+        return pactum
+          .spec()
+          .get('/courses')
+          .withBearerToken('$S{teacherToken}')
+          .expectStatus(200);
+      });
+
+      it('should get course by id without token', () => {
+        return pactum.spec().get('/courses/$S{courseId}').expectStatus(200);
+      });
+    });
+
+    describe('Updating Course', () => {
+      const dto = {
+        name: 'Edited course name',
+      };
+      it('should get unauthorized error without any token', () => {
+        return pactum
+          .spec()
+          .patch('/courses/$S{courseId}')
+          .withBody(dto)
+          .expectStatus(401);
+      });
+
+      it('should get unauthorized error without teacher token', () => {
+        return pactum
+          .spec()
+          .patch('/courses/$S{courseId}')
+          .withBody(dto)
+          .expectStatus(403)
+          .withBearerToken('$S{studentToken}');
+      });
+
+      it('update course with teacher token', () => {
+        return pactum
+          .spec()
+          .patch('/courses/$S{courseId}')
+          .withBody(dto)
+          .expectStatus(200)
+          .withBearerToken('$S{teacherToken}');
+      });
+    });
+
+    describe('Deleting Course', () => {
+      it('should get unauthorized error with teacher token', () => {
+        return pactum
+          .spec()
+          .delete('/courses/$S{courseId}')
+          .withBearerToken('$S{teacherToken}')
+          .expectStatus(403);
+      });
+
+      it('delete course', () => {
+        return pactum
+          .spec()
+          .delete('/courses/$S{courseId}')
+          .withBearerToken('$S{adminToken}')
+          .expectStatus(200);
+      });
+    });
+
+    describe('Enrolling Course', () => {
+      it('should get unauthorized error without student token', () => {
+        return pactum
+          .spec()
+          .post('/courses/$S{courseId}/courseEnrollments')
+          .withBearerToken('$S{adminToken}')
+          .expectStatus(403);
+      });
+
+      it('enroll course', () => {
+        return pactum
+          .spec()
+          .post('/courses/$S{courseId}/courseEnrollments')
+          .withBearerToken('$S{studentToken}')
+          .expectStatus(201);
+      });
+    });
+  });
 });
