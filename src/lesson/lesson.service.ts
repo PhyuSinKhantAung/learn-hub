@@ -26,7 +26,6 @@ export class LessonService {
     return { data: lessons, count: lessons.length };
   }
   async editLesson(lessonId: string, dto: EditLessonDto) {
-    console.log({ lessonId, dto });
     const lesson = await this.prisma.lesson.update({
       where: {
         id: +lessonId,

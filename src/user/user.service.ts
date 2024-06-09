@@ -10,8 +10,9 @@ export class UserService {
 
   async createUser(dto: CreateUserDto) {
     const hashedPassword = await argon.hash(dto.password);
+
     const data = { ...dto, password: hashedPassword };
-    console.log('reached');
+
     const user = await this.prisma.user.create({
       data,
       select: {
@@ -22,7 +23,7 @@ export class UserService {
         isActive: true,
       },
     });
-    console.log({ user });
+
     return user;
   }
 

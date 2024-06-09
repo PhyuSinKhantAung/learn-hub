@@ -1,9 +1,4 @@
-import {
-  // MiddlewareConsumer,
-  Module,
-  // NestModule,
-  // RequestMethod,
-} from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { TeacherModule } from './teacher/teacher.module';
@@ -17,7 +12,6 @@ import { EpisodeModule } from './episode/episode.module';
 import { MulterModule } from '@nestjs/platform-express';
 import { FileModule } from './file/file.module';
 import { AssignmentModule } from './assignment/assignment.module';
-// import WelcomeMiddleware from 'src/middlewares/welcome.middleware';
 
 @Module({
   imports: [
@@ -40,10 +34,4 @@ import { AssignmentModule } from './assignment/assignment.module';
   controllers: [],
   providers: [],
 })
-export class AppModule {
-  // configure(consumer: MiddlewareConsumer) {
-  //   consumer
-  //     .apply(WelcomeMiddleware)
-  //     .forRoutes({ path: '/', method: RequestMethod.GET });
-  // }
-}
+export class AppModule {}

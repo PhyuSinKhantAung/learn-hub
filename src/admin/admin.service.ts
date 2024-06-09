@@ -10,11 +10,8 @@ export class AdminService {
 
   async createAdmin(dto: CreateAdminDto, role: Role = Role.ADMIN) {
     try {
-      const admin = await this.userService.createUser({ ...dto, role });
-      console.log({ admin });
-      return { message: 'success ' };
+      return await this.userService.createUser({ ...dto, role });
     } catch (error) {
-      console.log('causing error?', error);
       if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
           throw new ForbiddenException('Credentials taken');

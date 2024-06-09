@@ -20,10 +20,7 @@ export class AdminController {
   @Post('/superadmin')
   @HttpCode(HttpStatus.CREATED)
   async createSuperAdmin(@Body() dto: CreateAdminDto) {
-    console.log('here logged');
-    const admin = await this.adminService.createAdmin(dto, Role.SUPERADMIN);
-    console.log({ admin });
-    return admin;
+    return await this.adminService.createAdmin(dto, Role.SUPERADMIN);
   }
 
   @Roles(Role.SUPERADMIN)
