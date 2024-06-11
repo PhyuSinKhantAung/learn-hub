@@ -33,7 +33,7 @@ export class LessonController {
     return this.lessonService.getLessons(courseId);
   }
 
-  @Roles(Role.STUDENT, Role.TEACHER)
+  @Roles(Role.TEACHER)
   @UseGuards(JwtGuard, RoleGuard)
   @Patch('/:lessonId')
   async editLesson(

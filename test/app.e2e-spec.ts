@@ -349,7 +349,6 @@ describe('AppController (e2e)', () => {
           .spec()
           .post('/courses/$S{courseId}/courseEnrollments')
           .withBearerToken('$S{studentToken}')
-          .inspect()
           .expectStatus(201);
       });
 
@@ -358,7 +357,6 @@ describe('AppController (e2e)', () => {
           .spec()
           .post('/courses/$S{courseId}/courseEnrollments')
           .withBearerToken('$S{secondStudentToken}')
-          .inspect()
           .expectStatus(201);
       });
 
@@ -426,6 +424,88 @@ describe('AppController (e2e)', () => {
           .delete('/courses/10000')
           .withBearerToken('$S{adminToken}')
           .expectStatus(404);
+      });
+    });
+
+    describe('Lesson', () => {
+      describe('Creating Lesson', () => {
+        const dto = {
+          title: 'Speaking Lesson',
+          description: 'Hello World',
+          courseId: '$S{courseId}',
+        };
+
+        it('should get unauthorized error without teacher token', () => {
+          return pactum
+            .spec()
+            .post('/lessons')
+            .withBody(dto)
+            .withBearerToken('$S{studentToken}')
+            .expectStatus(403);
+        });
+
+        it('create lesson with only teacher token', () => {
+          return pactum
+            .spec()
+            .post('/lessons')
+            .withBody(dto)
+            .withBearerToken('$S{teacherToken}')
+            .stores('lessonId', 'id')
+            .inspect()
+            .expectStatus(201);
+        });
+      });
+
+      describe('Get Lessons', () => {
+        it('get lessons by course id with teacher token', () => {
+          return pactum
+            .spec()
+            .get('/lessons')
+            .withQueryParams('courseId', '$S{courseId}')
+            .withBearerToken('$S{teacherToken}')
+            .expectStatus(200);
+        });
+
+        it('get lessons by course id with student token', () => {
+          return pactum
+            .spec()
+            .get('/lessons')
+            .withQueryParams('courseId', '$S{courseId}')
+            .withBearerToken('$S{studentToken}')
+            .expectStatus(200);
+        });
+
+        it('should get data empty array as lessons when accessing with non-exist course id', () => {
+          return pactum
+            .spec()
+            .get('/lessons')
+            .withQueryParams('courseId', '1000')
+            .withBearerToken('$S{studentToken}')
+            .expectBodyContains({
+              data: [],
+              count: 0,
+            })
+            .expectStatus(200);
+        });
+      });
+
+      describe('Update Lesson', () => {
+        it('should get unauthorized error when update lesson with student token', () => {
+          return pactum
+            .spec()
+            .patch('/lessons/$S{lessonId}')
+            .withBearerToken('$S{studentToken}')
+            .expectStatus(403);
+        });
+
+        it('update lesson by teacher token', () => {
+          return pactum
+            .spec()
+            .patch('/lessons/$S{lessonId}')
+            .withBearerToken('$S{teacherToken}')
+            .inspect()
+            .expectStatus(200);
+        });
       });
     });
   });
