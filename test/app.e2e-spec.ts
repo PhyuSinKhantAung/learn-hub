@@ -177,6 +177,19 @@ describe('AppController (e2e)', () => {
           .stores('studentToken', 'accessToken');
       });
 
+      it('sign up as second student', () => {
+        return pactum
+          .spec()
+          .post('/auth/signup')
+          .withBody({
+            name: 'Testing Student Second',
+            email: 'testingstudentsecond@gmail.com',
+            password: 'testingstudentsecond123456',
+          })
+          .expectStatus(201)
+          .stores('secondStudentToken', 'accessToken');
+      });
+
       it('sign in as student', () => {
         return pactum
           .spec()
@@ -241,6 +254,19 @@ describe('AppController (e2e)', () => {
           .expectStatus(201)
           .withBearerToken('$S{teacherToken}')
           .stores('courseId', 'id');
+      });
+
+      it('create second course by teacher token', () => {
+        return pactum
+          .spec()
+          .post('/courses')
+          .withBody({
+            name: 'Second course to delete',
+            description: 'Test descripion',
+          })
+          .expectStatus(201)
+          .withBearerToken('$S{teacherToken}')
+          .stores('secondCourseId', 'id');
       });
     });
 
@@ -309,24 +335,6 @@ describe('AppController (e2e)', () => {
       });
     });
 
-    describe('Deleting Course', () => {
-      it('should get unauthorized error with teacher token', () => {
-        return pactum
-          .spec()
-          .delete('/courses/$S{courseId}')
-          .withBearerToken('$S{teacherToken}')
-          .expectStatus(403);
-      });
-
-      it('delete course', () => {
-        return pactum
-          .spec()
-          .delete('/courses/$S{courseId}')
-          .withBearerToken('$S{adminToken}')
-          .expectStatus(200);
-      });
-    });
-
     describe('Enrolling Course', () => {
       it('should get unauthorized error without student token', () => {
         return pactum
@@ -336,12 +344,88 @@ describe('AppController (e2e)', () => {
           .expectStatus(403);
       });
 
-      it('enroll course', () => {
+      it('enroll course with student token', () => {
         return pactum
           .spec()
           .post('/courses/$S{courseId}/courseEnrollments')
           .withBearerToken('$S{studentToken}')
+          .inspect()
           .expectStatus(201);
+      });
+
+      it('enroll course as second student', () => {
+        return pactum
+          .spec()
+          .post('/courses/$S{courseId}/courseEnrollments')
+          .withBearerToken('$S{secondStudentToken}')
+          .inspect()
+          .expectStatus(201);
+      });
+
+      it('should get course not found error', () => {
+        return pactum
+          .spec()
+          .post('/courses/1000/courseEnrollments')
+          .withBearerToken('$S{studentToken}')
+          .expectStatus(404);
+      });
+
+      it('get all enrolled courses with only admin/superadmin token', () => {
+        return pactum
+          .spec()
+          .get('/courses/allCourseEnrollments')
+          .withBearerToken('$S{adminToken}')
+          .expectStatus(200);
+      });
+
+      it('should get unauthorized error when access all enrolled courses without admin/superadmin token', () => {
+        return pactum
+          .spec()
+          .get('/courses/allCourseEnrollments')
+          .withBearerToken('$S{studentToken}')
+          .expectStatus(403);
+      });
+
+      it(`get own enrolled courses with only own token`, () => {
+        return pactum
+          .spec()
+          .get('/courses/courseEnrollments')
+          .withBearerToken('$S{studentToken}')
+          .expectStatus(200);
+      });
+
+      it(`should get unauthorized error when access the user's enrolled courses`, () => {
+        return pactum
+          .spec()
+          .get('/courses/courseEnrollments')
+          .withBearerToken('$S{adminToken}')
+          .expectStatus(403);
+      });
+    });
+
+    describe('Deleting Course', () => {
+      it('should get unauthorized error with teacher token', () => {
+        return pactum
+          .spec()
+          .delete('/courses/$S{courseId}')
+          .withBearerToken('$S{teacherToken}')
+          .expectStatus(403);
+      });
+
+      it('delete course with admin token', () => {
+        return pactum
+          .spec()
+          .delete('/courses/$S{secondCourseId}')
+          .withBearerToken('$S{adminToken}')
+          .expectStatus(200);
+      });
+
+      it('should get course not found error when deleting non-exist course with superadmin token', () => {
+        return pactum
+          .spec()
+          .delete('/courses/10000')
+          .withBearerToken('$S{adminToken}')
+          .expectStatus(404);
       });
     });
   });

@@ -3,6 +3,9 @@ import {
   Controller,
   Delete,
   Get,
+  NotFoundException,
+  // Logger,
+  // NotFoundException,
   Param,
   Patch,
   Post,
@@ -73,10 +76,15 @@ export class CourseController {
     @GetUser('role') role: CourseUserRole,
     @GetUser('id') userId: number,
   ) {
-    return await this.courseService.enrollCourse({
+    if (!(await this.courseService.getCourseById(+id)))
+      throw new NotFoundException('Course not found');
+
+    const course = await this.courseService.enrollCourse({
       courseId: +id,
       userId,
       role,
     });
+
+    return course;
   }
 }
