@@ -457,6 +457,14 @@ describe('AppController (e2e)', () => {
       });
 
       describe('Get Lessons', () => {
+        it('should get unauthenticated error without auth header', () => {
+          return pactum
+            .spec()
+            .get('/lessons')
+            .withQueryParams('courseId', '$S{courseId}')
+            .expectStatus(401);
+        });
+
         it('get lessons by course id with teacher token', () => {
           return pactum
             .spec()
@@ -472,6 +480,15 @@ describe('AppController (e2e)', () => {
             .get('/lessons')
             .withQueryParams('courseId', '$S{courseId}')
             .withBearerToken('$S{studentToken}')
+            .expectStatus(200);
+        });
+
+        it('get lessons by course id with admin token', () => {
+          return pactum
+            .spec()
+            .get('/lessons')
+            .withBearerToken('$S{adminToken}')
+            .withQueryParams('courseId', '$S{courseId}')
             .expectStatus(200);
         });
 
