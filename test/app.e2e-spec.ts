@@ -554,7 +554,8 @@ describe('AppController (e2e)', () => {
             .withBody(dto)
             .withBearerToken('$S{teacherToken}')
             .expectStatus(201)
-            .inspect();
+            .inspect()
+            .stores('episodeId', 'id');
         });
 
         it('create second episode for each lesson', () => {
@@ -596,6 +597,113 @@ describe('AppController (e2e)', () => {
             .inspect()
             .expectJsonLike({ data: [{}], count: 1 });
         });
+      });
+    });
+
+    describe('Assignment', () => {
+      describe('Create assignment', () => {
+        const dto = {
+          episodeId: '$S{episodeId}',
+          title: 'Hello World',
+          description: 'Testing World',
+        };
+
+        it('should get unauthenticated error', () => {
+          return pactum.spec().post('/assignments').expectStatus(401);
+        });
+
+        it('should get bad request error', () => {
+          return pactum
+            .spec()
+            .post('/assignments')
+            .withBearerToken('$S{teacherToken}')
+            .expectStatus(400);
+        });
+
+        it('create assignment with episode id using only teacher token', () => {
+          return pactum
+            .spec()
+            .post('/assignments')
+            .withBearerToken('$S{teacherToken}')
+            .withBody(dto)
+            .stores('assignmentId', 'id')
+            .expectStatus(201);
+        });
+
+        it('should get unauthorized error', () => {
+          return pactum
+            .spec()
+            .post('/assignments')
+            .withBearerToken('$S{studentToken}')
+            .withBody(dto)
+            .expectStatus(403);
+        });
+      });
+
+      describe('Create assignment submission', () => {
+        const dto = {
+          assignmentParagraph:
+            'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
+        };
+
+        it('should get unauthenticated error', () => {
+          return pactum
+            .spec()
+            .post('/assignments/$S{assignmentId}/submissions')
+            .withBody(dto)
+            .expectStatus(401);
+        });
+
+        it('should get unauthorized error', () => {
+          return pactum
+            .spec()
+            .post('/assignments/$S{assignmentId}/submissions')
+            .withBody(dto)
+            .withBearerToken('$S{adminToken}')
+            .expectStatus(403);
+        });
+
+        it('make assignment submission with assignment id using student token ', () => {
+          return pactum
+            .spec()
+            .post('/assignments/$S{assignmentId}/submissions')
+            .withBody(dto)
+            .withBearerToken('$S{studentToken}')
+            .stores('submissionId', 'id')
+            .expectStatus(201);
+        });
+      });
+
+      describe('Getting assigment submissions', () => {
+        it('getting assignment submissions by assignment id', () => {
+          return pactum
+            .spec()
+            .get('/assignments/$S{assignmentId}/submissions')
+            .withBearerToken('$S{teacherToken}')
+            .expectStatus(200)
+            .expectJsonLike({
+              data: [{}],
+              count: 1,
+            });
+        });
+      });
+
+      describe('Update assignment submission', () => {
+        const dto = {
+          result: 50,
+          isChecked: true,
+        };
+
+        it('grade assignment submission with only teacher token', () => {
+          return pactum
+            .spec()
+            .patch('/assignments/$S{assignmentId}/submissions/$S{submissionId}')
+            .withBearerToken('$S{teacherToken}')
+            .expectStatus(200)
+            .withBody(dto);
+        });
+
+        // it('')
       });
     });
   });
