@@ -454,6 +454,17 @@ describe('AppController (e2e)', () => {
             .inspect()
             .expectStatus(201);
         });
+
+        it('create second lesson with only teacher token', () => {
+          return pactum
+            .spec()
+            .post('/lessons')
+            .withBody(dto)
+            .withBearerToken('$S{teacherToken}')
+            .stores('secondLessonId', 'id')
+            .inspect()
+            .expectStatus(201);
+        });
       });
 
       describe('Get Lessons', () => {
@@ -522,6 +533,68 @@ describe('AppController (e2e)', () => {
             .withBearerToken('$S{teacherToken}')
             .inspect()
             .expectStatus(200);
+        });
+      });
+    });
+
+    describe('Episode', () => {
+      describe('Create episode', () => {
+        const dto = {
+          title: 'Episode 1',
+          lessonId: String('$S{lessonId}'),
+          resources: [
+            'https://example.com', //resource link as an example
+          ],
+        };
+
+        it('create episode for each lesson', () => {
+          return pactum
+            .spec()
+            .post('/episodes')
+            .withBody(dto)
+            .withBearerToken('$S{teacherToken}')
+            .expectStatus(201)
+            .inspect();
+        });
+
+        it('create second episode for each lesson', () => {
+          return pactum
+            .spec()
+            .post('/episodes')
+            .withBody({ ...dto, lessonId: '$S{secondLessonId}' })
+            .withBearerToken('$S{teacherToken}')
+            .expectStatus(201)
+            .inspect();
+        });
+
+        it('should get unauthorized error when creating episode without teacher token', () => {
+          return pactum
+            .spec()
+            .post('/episodes')
+            .withBody(dto)
+            .withBearerToken('$S{studentToken}')
+            .expectStatus(403);
+        });
+      });
+
+      describe('Getting Episodes', () => {
+        it('should get bad request error without lesson id', () => {
+          return pactum
+            .spec()
+            .get('/episodes')
+            .withBearerToken('$S{studentToken}')
+            .expectStatus(400);
+        });
+
+        it('get episodes with auth header using lesson id query', () => {
+          return pactum
+            .spec()
+            .get('/episodes')
+            .withQueryParams('lessonId', '$S{lessonId}')
+            .withBearerToken('$S{studentToken}')
+            .expectStatus(200)
+            .inspect()
+            .expectJsonLike({ data: [{}], count: 1 });
         });
       });
     });

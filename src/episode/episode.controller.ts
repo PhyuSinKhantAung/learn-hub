@@ -1,5 +1,6 @@
 import { fileFormatFilter, getFilename } from './../utils/file-uploading.utils';
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -43,21 +44,23 @@ export class EpisodeController {
     @Body() dto: CreateEpisodeDto,
     @UploadedFiles() files: Array<Express.Multer.File>,
   ) {
-    const reshapedFiles = files.map((file) => {
+    const reshapedFiles = files?.map((file) => {
       return {
         pathname: file.filename,
         name: file.originalname,
         type: FileType.EPISODE,
       };
     });
-
-    return await this.episodeService.createEpisode(dto, reshapedFiles);
+    const result = await this.episodeService.createEpisode(dto, reshapedFiles);
+    return result;
   }
 
   @Roles(Role.STUDENT, Role.TEACHER)
   @UseGuards(JwtGuard, RoleGuard)
   @Get()
   async getEpisodesByLessonId(@Query('lessonId') lessonId: string) {
+    if (!lessonId) throw new BadRequestException('Lesson id is required');
+
     return await this.episodeService.getEpisodesByLessonId(lessonId);
   }
 
