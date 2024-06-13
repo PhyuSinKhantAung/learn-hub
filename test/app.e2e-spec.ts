@@ -445,25 +445,29 @@ describe('AppController (e2e)', () => {
         });
 
         it('create lesson with only teacher token', () => {
-          return pactum
-            .spec()
-            .post('/lessons')
-            .withBody(dto)
-            .withBearerToken('$S{teacherToken}')
-            .stores('lessonId', 'id')
-            .inspect()
-            .expectStatus(201);
+          return (
+            pactum
+              .spec()
+              .post('/lessons')
+              .withBody(dto)
+              .withBearerToken('$S{teacherToken}')
+              .stores('lessonId', 'id')
+              // .inspect()
+              .expectStatus(201)
+          );
         });
 
         it('create second lesson with only teacher token', () => {
-          return pactum
-            .spec()
-            .post('/lessons')
-            .withBody(dto)
-            .withBearerToken('$S{teacherToken}')
-            .stores('secondLessonId', 'id')
-            .inspect()
-            .expectStatus(201);
+          return (
+            pactum
+              .spec()
+              .post('/lessons')
+              .withBody(dto)
+              .withBearerToken('$S{teacherToken}')
+              .stores('secondLessonId', 'id')
+              // .inspect()
+              .expectStatus(201)
+          );
         });
       });
 
@@ -527,12 +531,14 @@ describe('AppController (e2e)', () => {
         });
 
         it('update lesson by teacher token', () => {
-          return pactum
-            .spec()
-            .patch('/lessons/$S{lessonId}')
-            .withBearerToken('$S{teacherToken}')
-            .inspect()
-            .expectStatus(200);
+          return (
+            pactum
+              .spec()
+              .patch('/lessons/$S{lessonId}')
+              .withBearerToken('$S{teacherToken}')
+              // .inspect()
+              .expectStatus(200)
+          );
         });
       });
     });
@@ -548,14 +554,16 @@ describe('AppController (e2e)', () => {
         };
 
         it('create episode for each lesson', () => {
-          return pactum
-            .spec()
-            .post('/episodes')
-            .withBody(dto)
-            .withBearerToken('$S{teacherToken}')
-            .expectStatus(201)
-            .inspect()
-            .stores('episodeId', 'id');
+          return (
+            pactum
+              .spec()
+              .post('/episodes')
+              .withBody(dto)
+              .withBearerToken('$S{teacherToken}')
+              .expectStatus(201)
+              // .inspect()
+              .stores('episodeId', 'id')
+          );
         });
 
         it('create second episode for each lesson', () => {
@@ -564,8 +572,8 @@ describe('AppController (e2e)', () => {
             .post('/episodes')
             .withBody({ ...dto, lessonId: '$S{secondLessonId}' })
             .withBearerToken('$S{teacherToken}')
-            .expectStatus(201)
-            .inspect();
+            .expectStatus(201);
+          // .inspect();
         });
 
         it('should get unauthorized error when creating episode without teacher token', () => {
@@ -588,14 +596,16 @@ describe('AppController (e2e)', () => {
         });
 
         it('get episodes with auth header using lesson id query', () => {
-          return pactum
-            .spec()
-            .get('/episodes')
-            .withQueryParams('lessonId', '$S{lessonId}')
-            .withBearerToken('$S{studentToken}')
-            .expectStatus(200)
-            .inspect()
-            .expectJsonLike({ data: [{}], count: 1 });
+          return (
+            pactum
+              .spec()
+              .get('/episodes')
+              .withQueryParams('lessonId', '$S{lessonId}')
+              .withBearerToken('$S{studentToken}')
+              .expectStatus(200)
+              // .inspect()
+              .expectJsonLike({ data: [{}], count: 1 })
+          );
         });
       });
     });
@@ -690,20 +700,54 @@ describe('AppController (e2e)', () => {
 
       describe('Update assignment submission', () => {
         const dto = {
-          result: 50,
-          isChecked: true,
+          assignmentParagraph: 'edited assinment submission edited',
         };
 
-        it('grade assignment submission with only teacher token', () => {
+        it('update assignment submission with id using its owner student token', () => {
           return pactum
             .spec()
             .patch('/assignments/$S{assignmentId}/submissions/$S{submissionId}')
-            .withBearerToken('$S{teacherToken}')
+            .withBody(dto)
+            .withBearerToken('$S{studentToken}')
             .expectStatus(200)
-            .withBody(dto);
+            .inspect();
         });
 
-        // it('')
+        it('should get unauthorized error without owner student token', () => {
+          return pactum
+            .spec()
+            .patch('/assignments/$S{assignmentId}/submissions/$S{submissionId}')
+            .withBody(dto)
+            .withBearerToken('$S{secondStudentToken}')
+            .expectStatus(401)
+            .inspect();
+        });
+
+        describe('Grading assignments', () => {
+          const dto = {
+            result: 50,
+            isChecked: true,
+            submissionId: '$S{submissionId}',
+          };
+
+          it('grade assignment submission with only teacher token', () => {
+            return pactum
+              .spec()
+              .patch('/assignments/$S{assignmentId}/grades')
+              .withBearerToken('$S{teacherToken}')
+              .withBody(dto)
+              .expectStatus(200);
+          });
+
+          it('should get unauthorized error when give the grades without teacher token', () => {
+            return pactum
+              .spec()
+              .patch('/assignments/$S{assignmentId}/grades')
+              .withBearerToken('$S{studentToken}')
+              .withBody(dto)
+              .expectStatus(403);
+          });
+        });
       });
     });
   });

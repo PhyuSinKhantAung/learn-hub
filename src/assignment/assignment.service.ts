@@ -114,8 +114,8 @@ export class AssignmentService {
 
   async gradeAssignmentSubmission(
     dto: GradeAssignmentSubmissionDto,
-    submissionId: string,
-    assignmentId: string,
+    submissionId: number,
+    assignmentId: number,
     userId: number,
   ) {
     const user = await this.userService.getUserById(userId);
@@ -128,7 +128,8 @@ export class AssignmentService {
         assignmentId: +assignmentId,
       },
       data: {
-        ...dto,
+        result: dto.result,
+        isChecked: dto.isChecked,
         graderBy: user.name,
       },
     });
@@ -158,5 +159,33 @@ export class AssignmentService {
     });
 
     return result;
+  }
+
+  async updateAssignmentSubmissionById(
+    submissionId: number,
+    assignmentId: number,
+    dto: { assignmentParagraph: string },
+  ) {
+    const submission = await this.prisma.assignmentSubmission.update({
+      where: {
+        id: submissionId,
+        assignmentId,
+      },
+      data: {
+        ...dto,
+      },
+    });
+
+    if (!submission) throw new NotFoundException('Submission not found');
+
+    return submission;
+  }
+
+  async getAssignmentSubmissionById(submissionId: number) {
+    return await this.prisma.assignmentSubmission.findUnique({
+      where: {
+        id: submissionId,
+      },
+    });
   }
 }

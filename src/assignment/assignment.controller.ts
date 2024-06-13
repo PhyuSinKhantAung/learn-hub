@@ -8,6 +8,7 @@ import {
   Param,
   Patch,
   Post,
+  UnauthorizedException,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
@@ -21,6 +22,7 @@ import { CreateAssignmentSubmissionDto } from './dto/createAssignmentSubmission.
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { fileFormatFilter, getFilename } from 'src/utils/file-uploading.utils';
+import { UpdateAssignmentSubmissionDto } from './dto/updateAssignmentSubmission.dto';
 
 @Controller('assignments')
 export class AssignmentController {
@@ -85,17 +87,16 @@ export class AssignmentController {
 
   @Roles(Role.TEACHER)
   @UseGuards(JwtGuard, RoleGuard)
-  @Patch('/:assignmentId/submissions/:submissionId')
+  @Patch('/:assignmentId/grades')
   async gradeAssignmentSubmission(
-    @Param('submissionId') submissionId: string,
     @Param('assignmentId') assignmentId: string,
     @Body() dto: GradeAssignmentSubmissionDto,
     @GetUser('id') userId: number,
   ) {
     const submission = await this.assignmentService.gradeAssignmentSubmission(
       dto,
-      submissionId,
-      assignmentId,
+      dto?.submissionId,
+      +assignmentId,
       userId,
     );
 
@@ -106,6 +107,31 @@ export class AssignmentController {
     );
 
     await this.userService.updateUserById(submission.userId, { grade: result });
+
+    return submission;
+  }
+
+  @Roles(Role.STUDENT)
+  @UseGuards(JwtGuard, RoleGuard)
+  @Patch('/:assignmentId/submissions/:submissionId')
+  async updateAssignmentSubmissionById(
+    @Param('assignmentId') assignmentId: string,
+    @Param('submissionId') submissionId: string,
+    @Body() dto: UpdateAssignmentSubmissionDto,
+    @GetUser('id') userId: number,
+  ) {
+    const { userId: ownerUserId } =
+      await this.assignmentService.getAssignmentSubmissionById(+submissionId);
+
+    if (ownerUserId !== userId) {
+      throw new UnauthorizedException('You can only modify your submission.');
+    }
+    const submission =
+      await this.assignmentService.updateAssignmentSubmissionById(
+        +submissionId,
+        +assignmentId,
+        dto,
+      );
 
     return submission;
   }
