@@ -1,4 +1,11 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { CreateTeacherDto } from './dto';
 import { JwtGuard } from 'src/auth/guard/jwt.guard';
 import { TeacherService } from './teacher.service';
@@ -12,6 +19,7 @@ import { Role } from '@prisma/client';
 export class TeacherController {
   constructor(private teacherService: TeacherService) {}
   @Post()
+  @HttpCode(HttpStatus.CREATED)
   async createTeacher(@Body() dto: CreateTeacherDto) {
     return this.teacherService.createTeacher(dto);
   }

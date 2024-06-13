@@ -1,5 +1,13 @@
 import { AuthService } from './auth.service';
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { SigninDto, SignupDto } from './dto';
 import { GoogleOAuthGuard } from './guard/google-oauth.guard';
 import { GetUser } from './decorator';
@@ -14,6 +22,7 @@ export class AuthController {
   }
 
   @Post('signin')
+  @HttpCode(HttpStatus.OK)
   async signin(@Body() dto: SigninDto) {
     return await this.authService.signin(dto);
   }
@@ -30,7 +39,6 @@ export class AuthController {
     @GetUser('role') role: string,
   ) {
     const payload = { sub: id, email, role };
-    console.log({ payload }, '---');
     return this.authService.generateToken(payload);
   }
 }

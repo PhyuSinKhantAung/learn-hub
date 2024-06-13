@@ -40,8 +40,8 @@ model CourseEnrollMent {
   userId    Int
   courseId  Int
   role      CourseUserRole
-  course    Course         @relation(fields: [courseId], references: [id])
-  user      User           @relation(fields: [userId], references: [id])
+  course    Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([userId, courseId])
   @@index([userId])
@@ -52,7 +52,7 @@ model Grade {
   status GradeStatus @default(NORMAL)
   value  Int         @default(40)
   userId Int         @unique
-  user   User        @relation(fields: [userId], references: [id])
+  user   User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Lesson {
@@ -60,7 +60,7 @@ model Lesson {
   courseId    Int
   title       String
   description String?
-  course      Course    @relation(fields: [courseId], references: [id])
+  course      Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
   Episode     Episode[]
 }
 
@@ -68,7 +68,7 @@ model Episode {
   id          Int            @id @unique @default(autoincrement())
   lessonId    Int
   title       String
-  lesson      Lesson         @relation(fields: [lessonId], references: [id])
+  lesson      Lesson         @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   resources   Resource[]
   files       UploadedFile[]
   assignments Assignment[]
@@ -80,7 +80,7 @@ model Assignment {
   description String
 
   episodeId Int
-  episode   Episode @relation(fields: [episodeId], references: [id])
+  episode   Episode @relation(fields: [episodeId], references: [id], onDelete: Cascade)
 
   assignmentSubmissions AssignmentSubmission[]
 }
@@ -98,10 +98,10 @@ model AssignmentSubmission {
   isChecked Boolean @default(false)
 
   assignmentId Int
-  assignment   Assignment @relation(fields: [assignmentId], references: [id])
+  assignment   Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
 
   userId          Int
-  user            User           @relation(fields: [userId], references: [id])
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   assignmentFiles UploadedFile[]
 
   @@id([userId, assignmentId])
@@ -112,13 +112,13 @@ model UploadedFile {
   id        Int      @id @default(autoincrement())
   pathname  String   @unique
   episodeId Int?
-  episode   Episode? @relation(fields: [episodeId], references: [id])
+  episode   Episode? @relation(fields: [episodeId], references: [id], onDelete: Cascade)
   type      FileType
 
   user   User? @relation(fields: [userId], references: [id])
   userId Int?
 
-  assignmentSubmission             AssignmentSubmission? @relation(fields: [assignmentSubmissionUserId, assignmentSubmissionAssignmentId], references: [userId, assignmentId])
+  assignmentSubmission             AssignmentSubmission? @relation(fields: [assignmentSubmissionUserId, assignmentSubmissionAssignmentId], references: [userId, assignmentId], onDelete: Cascade)
   assignmentSubmissionUserId       Int?
   assignmentSubmissionAssignmentId Int?
 }
@@ -127,7 +127,7 @@ model Resource {
   id        Int     @id @unique @default(autoincrement())
   episodeId Int
   link      String
-  episode   Episode @relation(fields: [episodeId], references: [id])
+  episode   Episode @relation(fields: [episodeId], references: [id], onDelete: Cascade)
 }
 
 enum FileType {

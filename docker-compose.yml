@@ -10,5 +10,13 @@ services:
       POSTGRES_DB: learnhubDB
     networks:
       - learnhub
+  test-db:
+    image: postgres:13
+    ports:
+      - 5435:5432
+    environment:
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test1learn
+      POSTGRES_DB: testlearnhubdb
 networks:
   learnhub:

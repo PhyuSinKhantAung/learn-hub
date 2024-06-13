@@ -18,14 +18,14 @@ export class EpisodeService {
         data: {
           lessonId: +dto.lessonId,
           title: dto.title,
-          ...(dto.resources
+          ...(r
             ? {
                 resources: {
                   create: r,
                 },
               }
             : {}),
-          ...(files.length !== 0
+          ...(files?.length !== 0
             ? {
                 files: {
                   create: files,
@@ -41,6 +41,7 @@ export class EpisodeService {
         if (error.code === 'P2003')
           throw new NotFoundException('Lesson not found');
       }
+      throw error;
     }
   }
 

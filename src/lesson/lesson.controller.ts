@@ -26,14 +26,13 @@ export class LessonController {
     return this.lessonService.createLesson(dto);
   }
 
-  @Roles(Role.STUDENT, Role.TEACHER)
-  @UseGuards(JwtGuard, RoleGuard)
+  @UseGuards(JwtGuard)
   @Get()
   async getLessons(@Query('courseId') courseId: string) {
     return this.lessonService.getLessons(courseId);
   }
 
-  @Roles(Role.STUDENT, Role.TEACHER)
+  @Roles(Role.TEACHER)
   @UseGuards(JwtGuard, RoleGuard)
   @Patch('/:lessonId')
   async editLesson(
