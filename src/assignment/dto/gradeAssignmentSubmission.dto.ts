@@ -8,4 +8,8 @@ export class GradeAssignmentSubmissionDto {
   @IsBoolean()
   @IsNotEmpty()
   isChecked: boolean;
+
+  @IsNumber()
+  @IsNotEmpty()
+  submissionId: number;
 }
