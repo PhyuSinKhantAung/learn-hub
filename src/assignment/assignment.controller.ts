@@ -45,7 +45,9 @@ export class AssignmentController {
   @Get('/:assignmentId/submissions')
   async getAssignmentSubmissions(@Param('assignmentId') assignmentId: string) {
     Logger.log({ assignmentId });
-    return this.assignmentService.getAssignmentSubmissions(assignmentId);
+    return this.assignmentService.getAssignmentSubmissions({
+      assignmentId: +assignmentId,
+    });
   }
 
   @Roles(Role.STUDENT)
