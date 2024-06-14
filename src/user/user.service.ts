@@ -1,3 +1,5 @@
+import { AssignmentService } from 'src/assignment/assignment.service';
+import { CourseService } from './../course/course.service';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as argon from 'argon2';
@@ -6,7 +8,11 @@ import { UpdateUserDto } from 'src/auth/dto';
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private courseService: CourseService,
+    private assignmentService: AssignmentService,
+  ) {}
 
   async createUser(dto: CreateUserDto) {
     const hashedPassword = await argon.hash(dto.password);
@@ -58,5 +64,18 @@ export class UserService {
     });
 
     return user;
+  }
+
+  async getUserEnrolledCourses(userId: number) {
+    const enrolledCourses = await this.courseService.getEnrolledCourses(userId);
+
+    return enrolledCourses;
+  }
+
+  async getUserAssignmentSubmissions(userId: number) {
+    const assignmentSubmissions =
+      await this.assignmentService.getAssignmentSubmissions({ userId });
+
+    return assignmentSubmissions;
   }
 }

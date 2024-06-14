@@ -11,6 +11,10 @@ import { CreateAssignmentSubmissionDto } from './dto/createAssignmentSubmission.
 import { File } from 'src/utils/file-uploading.utils';
 import { UserService } from 'src/user/user.service';
 
+type AssignmentSubmissionFilter = {
+  assignmentId?: number;
+  userId?: number;
+};
 @Injectable()
 export class AssignmentService {
   constructor(
@@ -27,11 +31,14 @@ export class AssignmentService {
     return { data: assignments, count: assignments.length };
   }
 
-  async getAssignmentSubmissions(assignmentId: string) {
+  async getAssignmentSubmissions(filter: AssignmentSubmissionFilter) {
+    const customFilter = {} as AssignmentSubmissionFilter;
+
+    if (filter.assignmentId) customFilter.assignmentId = filter.assignmentId;
+    if (filter.userId) customFilter.userId = filter.userId;
+
     const submissions = await this.prisma.assignmentSubmission.findMany({
-      where: {
-        assignmentId: +assignmentId,
-      },
+      where: customFilter,
       include: {
         assignmentFiles: true,
         assignment: true,
